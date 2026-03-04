@@ -704,8 +704,10 @@ function parseSheetsData(sheets) {
 // ═══════════════════════════════════════════════
 function findKey(obj, ...candidates) {
   for (const c of candidates) {
-    const found = Object.keys(obj).find(k => k.replace(/\s+/g,' ').trim().toLowerCase().includes(c.toLowerCase()));
-    if (found) return obj[found];
+    const found = Object.keys(obj).find(k =>
+      k.replace(/[\s\n]+/g, ' ').trim().toLowerCase().includes(c.toLowerCase())
+    );
+    if (found !== undefined) return obj[found];
   }
   return '';
 }
@@ -960,14 +962,16 @@ function buildAlumnosRows() {
 
   document.getElementById('tbody-alumnos').innerHTML = filtered.length
     ? filtered.map((r,i) => {
-        const nombre  = findKey(r,'Apellido','Nombre');
-        const estado  = (findKey(r,'Estado')||'—').trim();
-        const motivo  = findKey(r,'Motivo') || '—';
-        const tipo    = findKey(r,'Tipo') || '—';
-        const crono   = findKey(r,'Cronograma') || '—';
-        const ult     = findKey(r,'Último','Contacto') || '—';
-        const prox    = findKey(r,'Próxima','tutoría','tutoria') || '—';
-        const obs     = findKey(r,'Observaciones') || '';
+    // Headers reales (con \n): 'Estado \nActual', 'Apellido \ny Nombre', 'Motivo de \nactivación',
+    // 'Tipo de \nausencia', 'Cronograma \npersonalizado \nentregado', 'Último \nContacto', 'Próxima \ntutoría'
+    const nombre  = findKey(r,'Apellido','Nombre');
+    const estado  = (findKey(r,'Estado')||'—').trim();
+    const motivo  = findKey(r,'Motivo') || '—';
+    const tipo    = findKey(r,'Tipo de','ausencia','Tipo') || '—';
+    const crono   = findKey(r,'Cronograma') || '—';
+    const ult     = findKey(r,'Último') || '—';
+    const prox    = findKey(r,'Próxima') || '—';
+    const obs     = findKey(r,'Observaciones') || '';
         const estadoPill = estado==='Activo'?'pill-green':estado==='Reincorporado'?'pill-orange':'pill-red';
         const cronoPill  = crono.toLowerCase()==='si'?'pill-green':'pill-red';
         return `<tr data-estado="${estado.toLowerCase()}">
@@ -1087,12 +1091,12 @@ function renderEntregas(rows) {
     const nombre   = findKey(r,'Apellido','Nombre');
     const modulo   = findKey(r,'Módulo','modulo') || '—';
     const practica = findKey(r,'Práctica','practica','N°') || '—';
-    const limite   = findKey(r,'Límite','limite') || '—';
-    const entrega  = findKey(r,'Fecha\nEntrega','Entrega') || '—';
+    const limite   = findKey(r,'Límite','limite','Limit') || '—';
+    const entrega  = findKey(r,'Fecha','Entrega','entrega') || '—';
     const entrego  = findKey(r,'Entregó','Entrego') || '—';
     const calif    = findKey(r,'Calificación','calificacion','Calif') || null;
     const feedback = findKey(r,'Feedback') || '—';
-    const tipo     = findKey(r,'Tipo') || '—';
+    const tipo     = findKey(r,'Tipo Evaluación','Evaluación','Tipo') || '—';
     const obs      = findKey(r,'Observaciones') || '';
     const califN   = parseFloat(calif);
     const scoreHtml = isNaN(califN)
@@ -1172,10 +1176,10 @@ function renderComunicaciones(rows) {
     const nombre  = findKey(r,'Apellido','Nombre');
     const fecha   = findKey(r,'Fecha') || '—';
     const canal   = (findKey(r,'Canal')||'—').trim();
-    const tipo    = findKey(r,'Tipo') || '—';
+    const tipo    = findKey(r,'Tipo Contacto','Tipo') || '—';
     const resumen = findKey(r,'Resumen') || '—';
-    const seg     = findKey(r,'R. Seguimiento','Seguimiento') || '—';
-    const accion  = findKey(r,'Próxima','acción','accion') || '—';
+    const seg     = findKey(r,'R. Seguimiento','Seguimiento','Seg') || '—';
+    const accion  = findKey(r,'Próxima','acción','accion','acordada') || '—';
     const reg     = findKey(r,'Registrado') || '—';
     const canalCls = canalColors[canal] || 'pill-muted';
     return `<tr>
