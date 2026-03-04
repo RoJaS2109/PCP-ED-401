@@ -499,29 +499,43 @@
 //  ⚙️  CONFIGURACIÓN — editá solo esta línea
 //  Pegá acá tu URL de publicación de Google Sheets
 // ═══════════════════════════════════════════════
- const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEy8KjPlYVjoCMMi-hJ_FwpN4ZzorNlT2dw6WrLj73q_RKSKkrbATAxA9q9O6ny17AjOwlZCPho8oF/pub?output=csv';
-//  const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEy8KjPlYVjoCMMi-hJ_FwpN4ZzorNlT2dw6WrLj73q_RKSKkrbATAxA9q9O6ny17AjOwlZCPho8oF/pubhtml';
+//const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEy8KjPlYVjoCMMi-hJ_FwpN4ZzorNlT2dw6WrLj73q_RKSKkrbATAxA9q9O6ny17AjOwlZCPho8oF/pub?output=csv';
+const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEy8KjPlYVjoCMMi-hJ_FwpN4ZzorNlT2dw6WrLj73q_RKSKkrbATAxA9q9O6ny17AjOwlZCPho8oF/pubhtml';
 // ═══════════════════════════════════════════════
 
-// Auto-conectar al cargar la página si hay URL configurada
-window.addEventListener('DOMContentLoaded', () => {
-  if (SHEETS_URL) {
-    document.getElementById('sheets-id-input').value = SHEETS_URL;
-    // Pequeño delay para que el DOM esté listo
-    setTimeout(() => connectSheets(), 300);
+// ═══════════════════════════════════════════════
+//  DRAG & DROP + AUTO-CONNECT — init seguro
+// ═══════════════════════════════════════════════
+function initApp() {
+  // Drag & drop
+  const dropZone = document.getElementById('drop-zone');
+  if (dropZone) {
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault(); dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
   }
-});
-// ═══════════════════════════════════════════════
-//  DRAG & DROP
-// ═══════════════════════════════════════════════
-const dropZone = document.getElementById('drop-zone');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag-over');
-  const f = e.dataTransfer.files[0];
-  if (f) handleFile(f);
-});
+
+  // Auto-conectar si hay URL configurada
+  if (SHEETS_URL && SHEETS_URL.trim()) {
+    const input = document.getElementById('sheets-id-input');
+    if (input) {
+      input.value = SHEETS_URL.trim();
+      setTimeout(() => connectSheets(), 400);
+    }
+  }
+}
+
+// Ejecutar cuando el DOM esté completamente listo
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  // Ya está listo (script ejecutándose después del DOM)
+  initApp();
+}
 
 // ═══════════════════════════════════════════════
 //  FILE READER
