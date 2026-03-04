@@ -281,6 +281,7 @@
   <div class="upload-title">Dashboard PCP</div>
   <div class="upload-sub">Electricista en Inmuebles · Ciclo 2026</div>
 
+  <!-- CARGA LOCAL DESHABILITADA TEMPORALMENTE
   <div class="upload-box" id="drop-zone">
     <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this.files[0])">
     <div class="upload-icon">📂</div>
@@ -299,6 +300,7 @@
     </div>
     <button class="btn-sheets" onclick="openSheetsModal()">Conectar</button>
   </div>
+  -->
 
   <div class="loading-bar" id="loading-bar"><div class="loading-bar-fill"></div></div>
 
@@ -345,44 +347,15 @@
     <div class="header-right">
       <span class="badge badge-gold" id="badge-periodo">Ciclo 2026</span>
       <span class="badge badge-blue" id="badge-semana">Sem. —</span>
-      <span class="badge badge-green badge-source" id="badge-source" onclick="reloadDashboard()" title="Cambiar archivo">📂 Cambiando archivo</span>
+      <!-- badge-source sin acción mientras está en modo automático -->
+      <span class="badge badge-green" id="badge-source" title="Conectado a Google Sheets">📊 Google Sheets (en vivo)</span>
       <button class="btn-reload" id="btn-sync" onclick="syncSheets()" style="display:none">🔄 Sincronizar</button>
       <button class="btn-reload" onclick="openPdfModal()" style="border-color:rgba(240,165,0,0.4);color:var(--accent)">📄 Exportar PDF</button>
+      <!-- CAMBIAR ARCHIVO DESHABILITADO TEMPORALMENTE
       <button class="btn-reload" onclick="reloadDashboard()">↩ Cambiar archivo</button>
+      -->
     </div>
   </header>
-
-  <!-- ══ MODAL PDF ══ -->
-  <div class="modal-overlay" id="pdf-modal">
-    <div class="modal" style="max-width:560px">
-      <h3>📄 Exportar Reporte PDF</h3>
-      <p>Seleccioná los alumnos para generar sus fichas individuales. Cada ficha incluye KPIs, seguimiento semanal, entregas y comunicaciones.</p>
-
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="filter-btn active" onclick="selectAllPdf(true)" style="font-size:0.7rem">✅ Todos</button>
-        <button class="filter-btn" onclick="selectAllPdf(false)" style="font-size:0.7rem">☐ Ninguno</button>
-        <div style="flex:1"></div>
-        <span id="pdf-count" style="font-size:0.72rem;font-family:var(--font-mono);color:var(--muted);align-self:center">0 seleccionados</span>
-      </div>
-
-      <div id="pdf-alumno-list" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:16px;padding-right:4px"></div>
-
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:20px">
-        <div style="font-size:0.7rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:8px">INCLUIR EN CADA FICHA</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-kpis" checked> KPIs generales</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-seguimiento" checked> Seguimiento semanal</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-entregas" checked> Entregas y calificaciones</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-comunicaciones" checked> Comunicaciones</label>
-        </div>
-      </div>
-
-      <div class="modal-btns">
-        <button class="btn-cancel" onclick="closePdfModal()">Cancelar</button>
-        <button class="btn-connect" onclick="generarPDF()" style="background:var(--accent);color:#000">⬇ Generar PDF</button>
-      </div>
-    </div>
-  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="showTab('resumen',this)">📊 Resumen</button>
@@ -493,6 +466,34 @@
 
 </div><!-- /wrapper -->
 </div><!-- /dashboard -->
+
+<!-- ══ MODAL PDF — fuera del dashboard para evitar herencia de display:none ══ -->
+<div class="modal-overlay" id="pdf-modal">
+  <div class="modal" style="max-width:560px">
+    <h3>📄 Exportar Reporte PDF</h3>
+    <p>Seleccioná los alumnos para generar sus fichas individuales. Cada ficha incluye KPIs, seguimiento semanal, entregas y comunicaciones.</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="filter-btn active" onclick="selectAllPdf(true)" style="font-size:0.7rem">✅ Todos</button>
+      <button class="filter-btn" onclick="selectAllPdf(false)" style="font-size:0.7rem">☐ Ninguno</button>
+      <div style="flex:1"></div>
+      <span id="pdf-count" style="font-size:0.72rem;font-family:var(--font-mono);color:var(--muted);align-self:center">0 seleccionados</span>
+    </div>
+    <div id="pdf-alumno-list" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:16px;padding-right:4px"></div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:20px">
+      <div style="font-size:0.7rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:8px">INCLUIR EN CADA FICHA</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-kpis" checked> KPIs generales</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-seguimiento" checked> Seguimiento semanal</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-entregas" checked> Entregas y calificaciones</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-comunicaciones" checked> Comunicaciones</label>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closePdfModal()">Cancelar</button>
+      <button class="btn-connect" onclick="generarPDF()" style="background:var(--accent);color:#000">⬇ Generar PDF</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -1530,6 +1531,7 @@ function generarPDF() {
       @media print {
         @page { margin:0; size:A4; }
         body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        .no-print { display:none !important; }
       }
     </style>`;
 
@@ -1537,7 +1539,19 @@ function generarPDF() {
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
     <title>Fichas PCP — ${fecha}</title>${style}</head>
-    <body>${fichas}</body></html>`);
+    <body>
+    <div style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:8px;no-print">
+      <button onclick="window.print()" style="padding:8px 16px;background:#f0a500;color:#000;border:none;
+        border-radius:8px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'Segoe UI',sans-serif">
+        🖨 Imprimir / Guardar PDF
+      </button>
+      <button onclick="window.close()" style="padding:8px 16px;background:#1c2333;color:#e6edf3;
+        border:1px solid #30363d;border-radius:8px;font-weight:600;font-size:0.78rem;cursor:pointer;
+        font-family:'Segoe UI',sans-serif">
+        ✕ Volver al Dashboard
+      </button>
+    </div>
+    ${fichas}</body></html>`);
   win.document.close();
 
   // Auto-print después de cargar
