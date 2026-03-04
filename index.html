@@ -347,9 +347,42 @@
       <span class="badge badge-blue" id="badge-semana">Sem. —</span>
       <span class="badge badge-green badge-source" id="badge-source" onclick="reloadDashboard()" title="Cambiar archivo">📂 Cambiando archivo</span>
       <button class="btn-reload" id="btn-sync" onclick="syncSheets()" style="display:none">🔄 Sincronizar</button>
+      <button class="btn-reload" onclick="openPdfModal()" style="border-color:rgba(240,165,0,0.4);color:var(--accent)">📄 Exportar PDF</button>
       <button class="btn-reload" onclick="reloadDashboard()">↩ Cambiar archivo</button>
     </div>
   </header>
+
+  <!-- ══ MODAL PDF ══ -->
+  <div class="modal-overlay" id="pdf-modal">
+    <div class="modal" style="max-width:560px">
+      <h3>📄 Exportar Reporte PDF</h3>
+      <p>Seleccioná los alumnos para generar sus fichas individuales. Cada ficha incluye KPIs, seguimiento semanal, entregas y comunicaciones.</p>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="filter-btn active" onclick="selectAllPdf(true)" style="font-size:0.7rem">✅ Todos</button>
+        <button class="filter-btn" onclick="selectAllPdf(false)" style="font-size:0.7rem">☐ Ninguno</button>
+        <div style="flex:1"></div>
+        <span id="pdf-count" style="font-size:0.72rem;font-family:var(--font-mono);color:var(--muted);align-self:center">0 seleccionados</span>
+      </div>
+
+      <div id="pdf-alumno-list" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:16px;padding-right:4px"></div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:20px">
+        <div style="font-size:0.7rem;font-family:var(--font-mono);color:var(--muted);margin-bottom:8px">INCLUIR EN CADA FICHA</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-kpis" checked> KPIs generales</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-seguimiento" checked> Seguimiento semanal</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-entregas" checked> Entregas y calificaciones</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer"><input type="checkbox" id="pdf-comunicaciones" checked> Comunicaciones</label>
+        </div>
+      </div>
+
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closePdfModal()">Cancelar</button>
+        <button class="btn-connect" onclick="generarPDF()" style="background:var(--accent);color:#000">⬇ Generar PDF</button>
+      </div>
+    </div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="showTab('resumen',this)">📊 Resumen</button>
@@ -462,6 +495,22 @@
 </div><!-- /dashboard -->
 
 <script>
+// ═══════════════════════════════════════════════
+//  ⚙️  CONFIGURACIÓN — editá solo esta línea
+//  Pegá acá tu URL de publicación de Google Sheets
+// ═══════════════════════════════════════════════
+// const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEy8KjPlYVjoCMMi-hJ_FwpN4ZzorNlT2dw6WrLj73q_RKSKkrbATAxA9q9O6ny17AjOwlZCPho8oF/pub?output=csv';
+  const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSEy8KjPlYVjoCMMi-hJ_FwpN4ZzorNlT2dw6WrLj73q_RKSKkrbATAxA9q9O6ny17AjOwlZCPho8oF/pubhtml';
+// ═══════════════════════════════════════════════
+
+// Auto-conectar al cargar la página si hay URL configurada
+window.addEventListener('DOMContentLoaded', () => {
+  if (SHEETS_URL) {
+    document.getElementById('sheets-id-input').value = SHEETS_URL;
+    // Pequeño delay para que el DOM esté listo
+    setTimeout(() => connectSheets(), 300);
+  }
+});
 // ═══════════════════════════════════════════════
 //  DRAG & DROP
 // ═══════════════════════════════════════════════
@@ -1224,7 +1273,271 @@ function showTab(name, btn) {
   btn.classList.add('active');
 }
 
-function getSemana() {
+// ═══════════════════════════════════════════════
+//  PDF EXPORT
+// ═══════════════════════════════════════════════
+function openPdfModal() {
+  const modal = document.getElementById('pdf-modal');
+  const list  = document.getElementById('pdf-alumno-list');
+  const alumnos = cleanRows(_currentData?.alumnos || []);
+
+  list.innerHTML = alumnos.map((a, i) => {
+    const nombre = findKey(a,'Apellido','Nombre') || `Alumno ${i+1}`;
+    const estado = (findKey(a,'Estado') || '').trim();
+    const pill   = estado==='Activo'?'#3fb950':estado==='Reincorporado'?'#d29922':'#f85149';
+    return `<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;
+      background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer">
+      <input type="checkbox" class="pdf-chk" data-idx="${i}" checked onchange="updatePdfCount()">
+      <span style="flex:1;font-size:0.82rem;font-weight:600">${nombre}</span>
+      <span style="font-size:0.65rem;font-family:var(--font-mono);padding:2px 8px;border-radius:10px;
+        background:${pill}22;color:${pill};border:1px solid ${pill}55">${estado||'—'}</span>
+    </label>`;
+  }).join('');
+
+  updatePdfCount();
+  modal.classList.add('open');
+}
+
+function closePdfModal() { document.getElementById('pdf-modal').classList.remove('open'); }
+
+function selectAllPdf(val) {
+  document.querySelectorAll('.pdf-chk').forEach(c => c.checked = val);
+  updatePdfCount();
+}
+
+function updatePdfCount() {
+  const n = document.querySelectorAll('.pdf-chk:checked').length;
+  document.getElementById('pdf-count').textContent = `${n} seleccionado${n!==1?'s':''}`;
+}
+
+function generarPDF() {
+  const alumnos        = cleanRows(_currentData?.alumnos || []);
+  const seguimiento    = cleanRows(_currentData?.seguimiento || []);
+  const entregas       = cleanRows(_currentData?.entregas || []);
+  const comunicaciones = cleanRows(_currentData?.comunicaciones || []);
+
+  const selIdx = [...document.querySelectorAll('.pdf-chk:checked')].map(c => +c.dataset.idx);
+  if (!selIdx.length) { toast('Seleccioná al menos un alumno.', 'warning'); return; }
+
+  const inclKpis  = document.getElementById('pdf-kpis').checked;
+  const inclSeg   = document.getElementById('pdf-seguimiento').checked;
+  const inclEnt   = document.getElementById('pdf-entregas').checked;
+  const inclCom   = document.getElementById('pdf-comunicaciones').checked;
+
+  const fecha = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // Colores semana
+  const wcColors = {
+    C:'#3fb950',E:'#58a6ff',P:'#bc8cff',NC:'#f85149',V:'#39d3c3',A:'#d29922',B:'#f0a500'
+  };
+  const wcLabels = {C:'Conectado',E:'Entregó',P:'Tutoría',NC:'Sin contacto',V:'Chispa',A:'Accedió',B:'Bolsa trabajo'};
+
+  const fichas = selIdx.map(idx => {
+    const a = alumnos[idx];
+    if (!a) return '';
+
+    const nombre  = findKey(a,'Apellido','Nombre') || '—';
+    const estado  = (findKey(a,'Estado') || '—').trim();
+    const motivo  = findKey(a,'Motivo') || '—';
+    const tipo    = findKey(a,'Tipo de','ausencia','Tipo') || '—';
+    const crono   = findKey(a,'Cronograma') || '—';
+    const ult     = findKey(a,'Último') || '—';
+    const prox    = findKey(a,'Próxima') || '—';
+    const obs     = findKey(a,'Observaciones') || '—';
+    const dni     = findKey(a,'DNI') || '—';
+    const tel     = findKey(a,'Teléfono') || '—';
+    const email   = findKey(a,'Email') || '—';
+
+    const estadoColor = estado==='Activo'?'#3fb950':estado==='Reincorporado'?'#d29922':'#f85149';
+
+    // Seguimiento semanal
+    const semRow = seguimiento.find(r => (findKey(r,'Apellido','Nombre')||'').trim() === nombre.trim());
+    const semCols = semRow ? Object.keys(semRow).filter(k => /^sem\s*\d+/i.test(k.trim())) : [];
+    const ncCount = semCols.filter(k => (semRow[k]||'').trim().toUpperCase()==='NC').length;
+    const actCount = semCols.filter(k => ['C','E','P','V','B'].includes((semRow[k]||'').trim().toUpperCase())).length;
+    const partPct = semCols.length ? Math.round(actCount/semCols.length*100) : 0;
+
+    const semHtml = semCols.map(k => {
+      const v = (semRow[k]||'').trim().toUpperCase();
+      const col = wcColors[v] || '#30363d';
+      const lbl = wcLabels[v] || v || '·';
+      return `<div title="${lbl}" style="width:26px;height:26px;border-radius:5px;display:inline-flex;
+        align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:monospace;
+        background:${col}22;color:${col};border:1px solid ${col}55;margin:2px">${v||'·'}</div>`;
+    }).join('');
+
+    // Entregas del alumno
+    const entAlumno = entregas.filter(e => (findKey(e,'Apellido','Nombre')||'').trim()===nombre.trim());
+    const entHtml = entAlumno.map(e => {
+      const mod  = findKey(e,'Módulo','modulo') || '—';
+      const prac = findKey(e,'Práctica','N°') || '—';
+      const lim  = findKey(e,'Límite','limite','Limit') || '—';
+      const ent  = findKey(e,'Fecha','Entrega','entrega') || '—';
+      const entrego = findKey(e,'Entregó','Entrego') || '—';
+      const calif = findKey(e,'Calificación','calificacion','Calif') || '—';
+      const tipo2 = findKey(e,'Tipo Evaluación','Evaluación','Tipo') || '—';
+      const entColor = entrego.toLowerCase()==='si'?'#3fb950':'#f85149';
+      const califN = parseFloat(calif);
+      const califColor = isNaN(califN)?'#7d8590':califN>=90?'#3fb950':califN>=70?'#d29922':'#f85149';
+      return `<tr>
+        <td>${mod}</td><td>${prac}</td><td>${tipo2}</td>
+        <td>${lim}</td><td>${ent}</td>
+        <td style="color:${entColor};font-weight:600">${entrego}</td>
+        <td style="color:${califColor};font-weight:700">${isNaN(califN)?'—':califN}</td>
+      </tr>`;
+    }).join('') || `<tr><td colspan="7" style="color:#7d8590;text-align:center">Sin entregas registradas</td></tr>`;
+
+    // Comunicaciones del alumno
+    const comAlumno = comunicaciones.filter(c => (findKey(c,'Apellido','Nombre')||'').trim()===nombre.trim());
+    const comHtml = comAlumno.map(c => {
+      const fecha2  = findKey(c,'Fecha') || '—';
+      const canal   = findKey(c,'Canal') || '—';
+      const tipo3   = findKey(c,'Tipo Contacto','Tipo') || '—';
+      const resumen = findKey(c,'Resumen') || '—';
+      const seg     = findKey(c,'R. Seguimiento','Seguimiento','Seg') || '—';
+      const accion  = findKey(c,'Próxima','acción','acordada') || '—';
+      const segColor = seg.toLowerCase()==='si'?'#f85149':'#7d8590';
+      return `<tr>
+        <td>${fecha2}</td><td>${canal}</td><td>${tipo3}</td>
+        <td style="max-width:160px">${resumen}</td>
+        <td style="color:${segColor};font-weight:600">${seg}</td>
+        <td style="max-width:140px">${accion}</td>
+      </tr>`;
+    }).join('') || `<tr><td colspan="6" style="color:#7d8590;text-align:center">Sin comunicaciones registradas</td></tr>`;
+
+    // KPIs del alumno
+    const kpisHtml = inclKpis ? `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
+        ${[
+          ['Estado',      estado,     estadoColor],
+          ['Participación', partPct+'%', partPct>=70?'#3fb950':partPct>=40?'#d29922':'#f85149'],
+          ['Alertas NC',  ncCount,    ncCount>0?'#f85149':'#3fb950'],
+          ['Entregas',    entAlumno.filter(e=>findKey(e,'Entregó','Entrego').toLowerCase()==='si').length+'/'+entAlumno.length, '#58a6ff'],
+        ].map(([l,v,c])=>`
+          <div style="background:#1c2333;border:1px solid #30363d;border-radius:10px;padding:12px;border-top:3px solid ${c}">
+            <div style="font-size:9px;color:#7d8590;text-transform:uppercase;letter-spacing:0.08em;font-family:monospace;margin-bottom:6px">${l}</div>
+            <div style="font-size:1.4rem;font-weight:700;color:${c}">${v}</div>
+          </div>`).join('')}
+      </div>` : '';
+
+    const segHtml = inclSeg && semCols.length ? `
+      <div style="margin-bottom:20px">
+        <div class="pdf-section-title">📅 Seguimiento Semanal</div>
+        <div style="margin-bottom:8px">${semHtml}</div>
+        <div style="font-size:10px;color:#7d8590;font-family:monospace">
+          Participación: ${partPct}% · NC: ${ncCount} semana${ncCount!==1?'s':''} sin contacto
+        </div>
+      </div>` : '';
+
+    const entSection = inclEnt ? `
+      <div style="margin-bottom:20px">
+        <div class="pdf-section-title">📦 Entregas y Calificaciones</div>
+        <table class="pdf-table">
+          <thead><tr><th>Módulo</th><th>Práctica</th><th>Tipo</th><th>F.Límite</th><th>F.Entrega</th><th>Entregó</th><th>Calif.</th></tr></thead>
+          <tbody>${entHtml}</tbody>
+        </table>
+      </div>` : '';
+
+    const comSection = inclCom ? `
+      <div style="margin-bottom:20px">
+        <div class="pdf-section-title">💬 Comunicaciones</div>
+        <table class="pdf-table">
+          <thead><tr><th>Fecha</th><th>Canal</th><th>Tipo</th><th>Resumen</th><th>Seg.</th><th>Próxima acción</th></tr></thead>
+          <tbody>${comHtml}</tbody>
+        </table>
+      </div>` : '';
+
+    return `
+      <div style="page-break-after:always;padding:32px;font-family:'Segoe UI',sans-serif;color:#e6edf3;background:#0d1117;min-height:100vh">
+
+        <!-- Header ficha -->
+        <div style="display:flex;align-items:center;justify-content:space-between;
+          border-bottom:2px solid #f0a500;padding-bottom:16px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:42px;height:42px;background:#f0a500;border-radius:10px;
+              display:flex;align-items:center;justify-content:center;font-size:22px">⚡</div>
+            <div>
+              <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em">${nombre}</div>
+              <div style="font-size:10px;color:#7d8590;font-family:monospace;text-transform:uppercase;letter-spacing:0.05em">
+                Electricista en Inmuebles · PCP · Ciclo 2026
+              </div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;
+              font-family:monospace;background:${estadoColor}22;color:${estadoColor};border:1px solid ${estadoColor}55">
+              ${estado}
+            </div>
+            <div style="font-size:9px;color:#7d8590;font-family:monospace;margin-top:4px">Generado: ${fecha}</div>
+          </div>
+        </div>
+
+        <!-- Datos personales -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;
+          background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px">
+          ${[
+            ['DNI', dni], ['Teléfono', tel], ['Email', email],
+            ['Motivo activación', motivo], ['Tipo ausencia', tipo], ['Cronograma entregado', crono],
+            ['Último contacto', ult], ['Próxima tutoría', prox], ['Observaciones', obs],
+          ].map(([l,v])=>`
+            <div>
+              <div style="font-size:8px;color:#7d8590;text-transform:uppercase;letter-spacing:0.07em;font-family:monospace;margin-bottom:2px">${l}</div>
+              <div style="font-size:11px;color:#e6edf3">${v}</div>
+            </div>`).join('')}
+        </div>
+
+        ${kpisHtml}
+        ${segHtml}
+        ${entSection}
+        ${comSection}
+      </div>`;
+  }).join('');
+
+  // Estilos PDF
+  const style = `
+    <style>
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { background:#0d1117; color:#e6edf3; }
+      .pdf-section-title {
+        font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+        color:#7d8590;font-family:monospace;margin-bottom:10px;
+        display:flex;align-items:center;gap:6px;
+      }
+      .pdf-table { width:100%;border-collapse:collapse;font-size:10px; }
+      .pdf-table th {
+        background:#161b22;color:#7d8590;font-family:monospace;font-size:9px;
+        text-transform:uppercase;letter-spacing:0.06em;padding:6px 8px;
+        border-bottom:1px solid #30363d;text-align:left;white-space:nowrap;
+      }
+      .pdf-table td {
+        padding:7px 8px;border-bottom:1px solid #1c2333;
+        font-size:10px;color:#e6edf3;vertical-align:top;
+      }
+      .pdf-table tr:hover td { background:#161b22; }
+      @media print {
+        @page { margin:0; size:A4; }
+        body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      }
+    </style>`;
+
+  // Abrir ventana de impresión
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Fichas PCP — ${fecha}</title>${style}</head>
+    <body>${fichas}</body></html>`);
+  win.document.close();
+
+  // Auto-print después de cargar
+  win.onload = () => {
+    setTimeout(() => {
+      win.print();
+    }, 500);
+  };
+
+  closePdfModal();
+  toast('✅ Generando fichas PDF...', 'success');
+}
+
   const start = new Date('2026-03-02');
   const diff = Math.floor((new Date() - start) / (7*24*60*60*1000)) + 1;
   return Math.max(1, Math.min(36, diff));
