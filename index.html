@@ -543,25 +543,27 @@ async function connectSheets() {
 
   if (input.includes('/d/e/')) {
     // URL publicada 2PACX — extraer base limpia sin query params
-    pubBase = input.split('?')[0].replace(/\/$/, '');
+    // Forzar /pub (no /pubhtml ni /pubhtml#)
+    pubBase = input.split('?')[0].replace(/\/$/, '').replace(/\/pubhtml$/, '/pub').replace(/\/pub$/, '/pub');
   } else {
     const m = input.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
     sheetId = m ? m[1] : input.trim();
   }
 
   const SHEETS = [
-    { name: '2. Registro Maestro Alumnos' },
-    { name: '3. Seguimiento Semanal' },
-    { name: '4. Control de Entregas' },
-    { name: '5. Registro de Comunicaciones' },
+    { name: '2. Registro Maestro Alumnos',    gid: '635875138'  },
+    { name: '3. Seguimiento Semanal',          gid: '274443161'  },
+    { name: '4. Control de Entregas',          gid: '519847200'  },
+    { name: '5. Registro de Comunicaciones',   gid: '1502138161' },
   ];
 
   // ── Construir URL directa por hoja ──────────────────────────────
-  const buildDirectUrl = ({ name }) => {
+  const buildDirectUrl = ({ name, gid }) => {
     if (pubBase) {
-      // URL publicada: pubBase ya contiene https:// correcto
-      return `${pubBase}?output=csv&single=true&sheet=${encodeURIComponent(name)}`;
+      // Con URL 2PACX: el parámetro &sheet=nombre NO funciona — usar gid
+      return `${pubBase}?output=csv&single=true&gid=${gid}`;
     } else {
+      // Con ID clásico: gviz/tq sí funciona por nombre
       return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
     }
   };
