@@ -746,7 +746,16 @@ function renderDashboard(data, sourceName) {
   console.log('[PCP] seguimiento raw:', data.seguimiento?.length, '→ limpios:', seguimiento.length);
   console.log('[PCP] entregas raw:', data.entregas?.length, '→ limpios:', entregas.length);
   console.log('[PCP] comunicaciones raw:', data.comunicaciones?.length, '→ limpios:', comunicaciones.length);
-  if (alumnos.length > 0) console.log('[PCP] Headers alumnos:', Object.keys(alumnos[0]));
+  if (alumnos.length > 0) {
+    console.log('[PCP] Headers alumnos:', Object.keys(alumnos[0]));
+    const r0 = alumnos[0];
+    console.log('[PCP] Fila 1 alumnos → nombre:', findKey(r0,'Apellido','Nombre'),
+      '| estado:', findKey(r0,'Estado'),
+      '| motivo:', findKey(r0,'Motivo'),
+      '| crono:', findKey(r0,'Cronograma'),
+      '| último:', findKey(r0,'Último'),
+      '| próxima:', findKey(r0,'Próxima'));
+  }
   if (seguimiento.length > 0) console.log('[PCP] Headers seguimiento:', Object.keys(seguimiento[0]).slice(0,6));
   // ────────────────────────────────────────────────────────────────
 
@@ -793,6 +802,16 @@ function reloadDashboard() {
 
 // ─── RESUMEN ───
 function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
+  // ── Debug primera fila ───────────────────────────────────────────
+  if (alumnos.length > 0) {
+    const r = alumnos[0];
+    console.log('[PCP] Fila 1 completa:', JSON.stringify(r));
+    console.log('[PCP] findKey Estado:', JSON.stringify(findKey(r,'Estado')));
+    console.log('[PCP] findKey Apellido:', JSON.stringify(findKey(r,'Apellido','Nombre')));
+    console.log('[PCP] findKey Motivo:', JSON.stringify(findKey(r,'Motivo')));
+    console.log('[PCP] findKey Próxima:', JSON.stringify(findKey(r,'Próxima')));
+  }
+  // ────────────────────────────────────────────────────────────────
   // Estado counts
   const total = alumnos.length;
   const counts = {};
