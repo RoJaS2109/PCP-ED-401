@@ -379,7 +379,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>Situación académica y razones de vinculación mediante PCP</div>
+        <div class="card-title"><span class="dot" style="background:var(--orange)"></span>Situación académica y razones de vinculación mediante PCP</div>
         <div id="motivos-bars"></div>
       </div>
     </div>
@@ -1082,7 +1082,7 @@ function filterAlumnos() { buildAlumnosRows(); }
 // ─── SEGUIMIENTO ───
 function renderSeguimiento(rows) {
   const semCols = rows.length > 0
-    ? Object.keys(rows[0]).filter(k => /^sem\s*\d+/i.test(k.trim())).slice(0, 36)
+    ? Object.keys(rows[0]).filter(k => /^sem\s*\d+/i.test(k.trim())).slice(0, 41)
     : [];
 
   document.getElementById('thead-seguimiento').innerHTML = `<tr>
@@ -1568,7 +1568,7 @@ function generarPDF() {
 function getSemana() {
   const start = new Date('2026-03-02');
   const diff = Math.floor((new Date() - start) / (7*24*60*60*1000)) + 1;
-  return Math.max(1, Math.min(36, diff));
+  return Math.max(1, Math.min(41, diff));
 }
 </script>
 </body>
