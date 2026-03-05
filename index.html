@@ -879,7 +879,7 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   const total = alumnos.length;
   const counts = {};
   alumnos.forEach(a => {
-    const e = (findKey(a,'Estado') || '').trim() || 'Sin dato';
+    const e = (findKey(a,'Estado') || '').trim() || 'Cursando (Sin PCP)';
     counts[e] = (counts[e]||0) + 1;
   });
   const activos = counts['Activo'] || 0;
@@ -926,7 +926,7 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   // Motivos bars
   const motivos = {};
   alumnos.forEach(a => {
-    const m = (findKey(a,'Motivo') || 'Sin dato').trim();
+    const m = (findKey(a,'Motivo') || 'Cursando (Sin PCP)').trim();
     if (m) motivos[m] = (motivos[m]||0)+1;
   });
   const maxM = Math.max(...Object.values(motivos),1);
@@ -1105,7 +1105,7 @@ function renderSeguimiento(rows) {
       <td style="font-weight:600;white-space:nowrap">${nombre}</td>
       ${sems.map(s => {
         const cls = s ? `wc-${s}` : 'wc-empty';
-        const tip = s ? (wTips[s]||s) : 'Sin dato';
+        const tip = s ? (wTips[s]||s) : 'Cursando (Sin PCP)';
         return `<td style="padding:5px 3px"><span class="wc ${cls}" data-tip="${tip}" style="width:26px;height:26px">${s||'·'}</span></td>`;
       }).join('')}
       <td style="text-align:center;font-family:var(--font-mono);font-size:0.75rem;color:${ncCount>0?'var(--red)':'var(--muted)'}">${ncCount>0?'⚠️ '+ncCount:'0'}</td>
@@ -1118,7 +1118,7 @@ function renderSeguimiento(rows) {
         </div>
       </td>
     </tr>`;
-  }).join('') || `<tr><td colspan="40" style="text-align:center;color:var(--muted);padding:32px">Sin datos de seguimiento</td></tr>`;
+  }).join('') || `<tr><td colspan="40" style="text-align:center;color:var(--muted);padding:32px">Cursando (Sin PCP) de seguimiento</td></tr>`;
 }
 
 // ─── ENTREGAS ───
