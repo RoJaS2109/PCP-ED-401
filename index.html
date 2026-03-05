@@ -278,7 +278,7 @@
 <!-- ══════════════ UPLOAD SCREEN ══════════════ -->
 <div id="upload-screen">
   <div class="upload-logo">⚡</div>
-  <div class="upload-title">Dashboard Cursado y PCP</div>
+  <div class="upload-title">Monitor Académico</div>
   <div class="upload-sub">Electricista en Inmuebles · Ciclo 2026</div>
 
   <!-- CARGA LOCAL DESHABILITADA TEMPORALMENTE
@@ -460,7 +460,7 @@
   </div>
 
   <footer>
-    <span>⚡ Cursado y PCP · Electricista en Inmuebles · Ciclo 2026</span>
+    <span>⚡ Electricista en Inmuebles · Ciclo 2026</span>
     <span id="footer-ts"></span>
   </footer>
 
@@ -1473,7 +1473,7 @@ function generarPDF() {
             <div>
               <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em">${nombre}</div>
               <div style="font-size:10px;color:#7d8590;font-family:monospace;text-transform:uppercase;letter-spacing:0.05em">
-                Electricista en Inmuebles · Cursado y PCP · Ciclo 2026
+                Electricista en Inmuebles · Ciclo 2026
               </div>
             </div>
           </div>
@@ -1538,7 +1538,7 @@ function generarPDF() {
   // Abrir ventana de impresión
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Fichas Cursado y PCP — ${fecha}</title>${style}</head>
+    <title>Fichas de Alumnos — ${fecha}</title>${style}</head>
     <body>
     <div style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:8px;no-print">
       <button onclick="window.print()" style="padding:8px 16px;background:#f0a500;color:#000;border:none;
