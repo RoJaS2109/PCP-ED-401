@@ -251,13 +251,20 @@
   .legend-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
   .leg{display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--muted)}
 
-  /* Columnas fijas en Seguimiento */
+  /* Sticky columns en Seguimiento */
   .seg-sticky-left  { position:sticky; left:0; background:var(--surface); z-index:2; }
   .seg-sticky-right { position:sticky; right:0; background:var(--surface); z-index:2; box-shadow:-2px 0 6px rgba(0,0,0,0.3); }
   .seg-sticky-right2{ position:sticky; right:90px; background:var(--surface); z-index:2; box-shadow:-1px 0 4px rgba(0,0,0,0.15); }
   tr:hover .seg-sticky-left,
   tr:hover .seg-sticky-right,
   tr:hover .seg-sticky-right2 { background:rgba(255,255,255,0.02); }
+
+  /* Print: mostrar solo el overlay PDF */
+  @media print {
+    body > *:not(#pdf-overlay) { display:none !important; }
+    #pdf-overlay { position:static !important; overflow:visible !important; }
+    .no-print { display:none !important; }
+  }
 
   /* UPCOMING */
   .upcoming-item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(48,54,61,0.5)}
@@ -539,11 +546,18 @@ function initApp() {
     });
   }
 
-  // Fix Chrome/Android: event listeners en lugar de onclick inline para botones del modal PDF
+  // Fix Chrome Android: registrar tanto click como touchend
   const btnCancel  = document.getElementById('btn-pdf-cancel');
   const btnGenerar = document.getElementById('btn-pdf-generar');
-  if (btnCancel)  btnCancel.addEventListener('click',  () => closePdfModal());
-  if (btnGenerar) btnGenerar.addEventListener('click', () => generarPDF());
+
+  function addTapListener(el, fn) {
+    if (!el) return;
+    el.addEventListener('click', fn);
+    el.addEventListener('touchend', e => { e.preventDefault(); fn(); });
+  }
+
+  addTapListener(btnCancel,  () => closePdfModal());
+  addTapListener(btnGenerar, () => generarPDF());
 
   // Auto-conectar si hay URL configurada
   if (SHEETS_URL && SHEETS_URL.trim()) {
@@ -1605,34 +1619,54 @@ function generarPDF() {
       }
     </style>`;
 
-  // Abrir ventana de impresión
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Fichas de Alumnos — ${fecha}</title>${style}</head>
-    <body>
-    <div style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:8px;no-print">
-      <button onclick="window.print()" style="padding:8px 16px;background:#f0a500;color:#000;border:none;
-        border-radius:8px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'Segoe UI',sans-serif">
+  // ── Mostrar en overlay dentro de la misma página (compatible Chrome Android) ──
+  let overlay = document.getElementById('pdf-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'pdf-overlay';
+    overlay.style.cssText = `position:fixed;inset:0;z-index:9999;background:#0d1117;
+      overflow-y:auto;display:none;font-family:'Segoe UI',sans-serif;color:#e6edf3`;
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div style="position:sticky;top:0;z-index:10;display:flex;gap:8px;padding:12px 16px;
+      background:rgba(13,17,23,0.95);backdrop-filter:blur(8px);
+      border-bottom:1px solid #30363d;justify-content:flex-end" class="no-print">
+      <button id="btn-overlay-print"
+        style="padding:9px 18px;background:#f0a500;color:#000;border:none;border-radius:8px;
+        font-weight:700;font-size:0.82rem;cursor:pointer;font-family:'Segoe UI',sans-serif;
+        -webkit-tap-highlight-color:transparent">
         🖨 Imprimir / Guardar PDF
       </button>
-      <button onclick="window.close()" style="padding:8px 16px;background:#1c2333;color:#e6edf3;
-        border:1px solid #30363d;border-radius:8px;font-weight:600;font-size:0.78rem;cursor:pointer;
-        font-family:'Segoe UI',sans-serif">
-        ✕ Volver al Dashboard
+      <button id="btn-overlay-close"
+        style="padding:9px 18px;background:#1c2333;color:#e6edf3;border:1px solid #30363d;
+        border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;
+        font-family:'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent">
+        ✕ Volver
       </button>
     </div>
-    ${fichas}</body></html>`);
-  win.document.close();
+    <div style="padding:0">${fichas}</div>`;
 
-  // Auto-print después de cargar
-  win.onload = () => {
-    setTimeout(() => {
-      win.print();
-    }, 500);
-  };
+  overlay.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  // Botones del overlay con touchend para Android
+  function addTap(id, fn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', fn);
+    el.addEventListener('touchend', e => { e.preventDefault(); fn(); });
+  }
+
+  addTap('btn-overlay-print', () => window.print());
+  addTap('btn-overlay-close', () => {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+  });
 
   closePdfModal();
-  toast('✅ Generando fichas PDF...', 'success');
+  toast('✅ Fichas generadas — usá el botón para imprimir o guardar como PDF', 'success');
 }
 
 function getSemana() {
