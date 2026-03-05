@@ -926,8 +926,7 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   // Motivos bars
   const motivos = {};
   alumnos.forEach(a => {
-    //const m = (findKey(a,'Motivo') || 'Cursando (Sin PCP)').trim();
-    const m = (findKey(a,'Motivo') || 'Enfermedad').trim();
+    const m = (findKey(a,'Motivo') || 'Cursando (Sin PCP)').trim();
     if (m) motivos[m] = (motivos[m]||0)+1;
   });
   const maxM = Math.max(...Object.values(motivos),1);
