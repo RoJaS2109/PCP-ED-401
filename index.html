@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard PCP — Electricista en Inmuebles 2026</title>
+<title>Dashboard Cursado y PCP — Electricista en Inmuebles 2026</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -460,7 +460,7 @@
   </div>
 
   <footer>
-    <span>⚡ PCP · Electricista en Inmuebles · Ciclo 2026</span>
+    <span>⚡ Cursado y PCP · Electricista en Inmuebles · Ciclo 2026</span>
     <span id="footer-ts"></span>
   </footer>
 
@@ -1473,7 +1473,7 @@ function generarPDF() {
             <div>
               <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em">${nombre}</div>
               <div style="font-size:10px;color:#7d8590;font-family:monospace;text-transform:uppercase;letter-spacing:0.05em">
-                Electricista en Inmuebles · PCP · Ciclo 2026
+                Electricista en Inmuebles · Cursado y PCP · Ciclo 2026
               </div>
             </div>
           </div>
@@ -1538,7 +1538,7 @@ function generarPDF() {
   // Abrir ventana de impresión
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <title>Fichas PCP — ${fecha}</title>${style}</head>
+    <title>Fichas Cursado y PCP — ${fecha}</title>${style}</head>
     <body>
     <div style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:8px;no-print">
       <button onclick="window.print()" style="padding:8px 16px;background:#f0a500;color:#000;border:none;
