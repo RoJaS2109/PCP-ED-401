@@ -251,6 +251,14 @@
   .legend-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
   .leg{display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--muted)}
 
+  /* Columnas fijas en Seguimiento */
+  .seg-sticky-left  { position:sticky; left:0; background:var(--surface); z-index:2; }
+  .seg-sticky-right { position:sticky; right:0; background:var(--surface); z-index:2; box-shadow:-2px 0 6px rgba(0,0,0,0.3); }
+  .seg-sticky-right2{ position:sticky; right:90px; background:var(--surface); z-index:2; box-shadow:-1px 0 4px rgba(0,0,0,0.15); }
+  tr:hover .seg-sticky-left,
+  tr:hover .seg-sticky-right,
+  tr:hover .seg-sticky-right2 { background:rgba(255,255,255,0.02); }
+
   /* UPCOMING */
   .upcoming-item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(48,54,61,0.5)}
   .upcoming-item:last-child{border-bottom:none}
@@ -409,17 +417,29 @@
 
   <!-- SEGUIMIENTO -->
   <div id="tab-seguimiento" class="section">
-    <div class="legend-bar">
-      <div class="leg"><span class="wc wc-C" style="width:22px;height:22px">C</span>Conectado</div>
-      <div class="leg"><span class="wc wc-E" style="width:22px;height:22px">E</span>Entregó práctica</div>
-      <div class="leg"><span class="wc wc-P" style="width:22px;height:22px">P</span>Tutoría sincrónica</div>
-      <div class="leg"><span class="wc wc-NC" style="width:22px;height:22px;animation:none">NC</span>Sin contacto ⚠️</div>
-      <div class="leg"><span class="wc wc-V" style="width:22px;height:22px">V</span>Consultó Chispa</div>
-      <div class="leg"><span class="wc wc-A" style="width:22px;height:22px">A</span>Accedió sin entregar</div>
-      <div class="leg"><span class="wc wc-B" style="width:22px;height:22px">B</span>Revisó bolsa trabajo</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+      <div class="legend-bar" style="margin-bottom:0;flex:1">
+        <div class="leg"><span class="wc wc-C" style="width:22px;height:22px">C</span>Conectado</div>
+        <div class="leg"><span class="wc wc-E" style="width:22px;height:22px">E</span>Entregó práctica</div>
+        <div class="leg"><span class="wc wc-P" style="width:22px;height:22px">P</span>Tutoría sincrónica</div>
+        <div class="leg"><span class="wc wc-NC" style="width:22px;height:22px;animation:none">NC</span>Sin contacto ⚠️</div>
+        <div class="leg"><span class="wc wc-V" style="width:22px;height:22px">V</span>Consultó Chispa</div>
+        <div class="leg"><span class="wc wc-A" style="width:22px;height:22px">A</span>Accedió sin entregar</div>
+        <div class="leg"><span class="wc wc-B" style="width:22px;height:22px">B</span>Revisó bolsa trabajo</div>
+      </div>
+      <!-- Selector de rango de semanas -->
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button id="btn-sem-primera" class="filter-btn active" onclick="setSemRange('primera')" style="font-size:0.7rem;padding:5px 12px">Sem 1–20</button>
+        <button id="btn-sem-ultima" class="filter-btn" onclick="setSemRange('ultima')" style="font-size:0.7rem;padding:5px 12px">Sem 21–36</button>
+      </div>
     </div>
-    <div class="card" style="padding:0">
-      <div class="table-wrap"><table><thead id="thead-seguimiento"></thead><tbody id="tbody-seguimiento"></tbody></table></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap" style="overflow-x:auto">
+        <table style="border-collapse:collapse;width:100%">
+          <thead id="thead-seguimiento"></thead>
+          <tbody id="tbody-seguimiento"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -489,8 +509,8 @@
       </div>
     </div>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="closePdfModal()">Cancelar</button>
-      <button class="btn-connect" onclick="generarPDF()" style="background:var(--accent);color:#000">⬇ Generar PDF</button>
+      <button class="btn-cancel" id="btn-pdf-cancel">Cancelar</button>
+      <button class="btn-connect" id="btn-pdf-generar" style="background:var(--accent);color:#000">⬇ Generar PDF</button>
     </div>
   </div>
 </div>
@@ -518,6 +538,12 @@ function initApp() {
       if (f) handleFile(f);
     });
   }
+
+  // Fix Chrome/Android: event listeners en lugar de onclick inline para botones del modal PDF
+  const btnCancel  = document.getElementById('btn-pdf-cancel');
+  const btnGenerar = document.getElementById('btn-pdf-generar');
+  if (btnCancel)  btnCancel.addEventListener('click',  () => closePdfModal());
+  if (btnGenerar) btnGenerar.addEventListener('click', () => generarPDF());
 
   // Auto-conectar si hay URL configurada
   if (SHEETS_URL && SHEETS_URL.trim()) {
@@ -896,11 +922,18 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   });
   ncAlumnos.sort((a,b) => b.ncCount - a.ncCount);
 
-  // Próximas tutorías
+  // Próximas tutorías — ordenadas cronológicamente
   const proxTutorias = alumnos
     .filter(a => findKey(a,'Próxima','tutoría','tutoria'))
     .map(a => ({ nombre: findKey(a,'Apellido','Nombre'), fecha: findKey(a,'Próxima','tutoría','tutoria') }))
     .filter(a => a.fecha && a.fecha !== '—')
+    .sort((a, b) => {
+      const da = new Date(a.fecha), db = new Date(b.fecha);
+      if (isNaN(da) && isNaN(db)) return 0;
+      if (isNaN(da)) return 1;
+      if (isNaN(db)) return -1;
+      return da - db;
+    })
     .slice(0, 5);
 
   // KPIs
@@ -1080,36 +1113,73 @@ function setFilter(btn, estado) {
 function filterAlumnos() { buildAlumnosRows(); }
 
 // ─── SEGUIMIENTO ───
-function renderSeguimiento(rows) {
-  const semCols = rows.length > 0
-    ? Object.keys(rows[0]).filter(k => /^sem\s*\d+/i.test(k.trim())).slice(0, 41)
-    : [];
+// ─── SEGUIMIENTO ───
+let _seguimientoRows = [];
+let _semRange = 'primera'; // 'primera' | 'ultima'
 
-  document.getElementById('thead-seguimiento').innerHTML = `<tr>
-    <th>Alumno</th>
-    ${semCols.map(s => `<th style="padding:6px 4px">${s}</th>`).join('')}
-    <th>NC's</th><th>Participación</th>
-  </tr>`;
+function setSemRange(range) {
+  _semRange = range;
+  document.getElementById('btn-sem-primera').classList.toggle('active', range === 'primera');
+  document.getElementById('btn-sem-ultima').classList.toggle('active', range === 'ultima');
+  buildSeguimientoTable();
+}
+
+function renderSeguimiento(rows) {
+  _seguimientoRows = rows;
+  buildSeguimientoTable();
+}
+
+function buildSeguimientoTable() {
+  const rows = _seguimientoRows;
+  if (!rows.length) {
+    document.getElementById('thead-seguimiento').innerHTML = '';
+    document.getElementById('tbody-seguimiento').innerHTML =
+      `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">Sin datos de seguimiento</td></tr>`;
+    return;
+  }
+
+  // Todas las columnas de semana disponibles
+  const allSemCols = Object.keys(rows[0]).filter(k => /^sem\s*\d+/i.test(k.trim()));
+
+  // Separar en primera mitad (1-20) y segunda (21-36)
+  const primeraMitad = allSemCols.slice(0, 20);
+  const ultimaMitad  = allSemCols.slice(20);
+  const semCols = _semRange === 'primera' ? primeraMitad : ultimaMitad;
 
   const wTips = {C:'Conectado',E:'Entregó práctica',P:'Tutoría sincrónica',NC:'Sin contacto ⚠️',V:'Consultó Chispa',A:'Accedió sin entregar',B:'Revisó bolsa'};
 
+  // THEAD con sticky
+  document.getElementById('thead-seguimiento').innerHTML = `<tr>
+    <th class="seg-sticky-left" style="min-width:130px">Alumno</th>
+    ${semCols.map(s => `<th style="padding:6px 4px;white-space:nowrap">${s}</th>`).join('')}
+    <th class="seg-sticky-right2" style="min-width:60px;text-align:center">NC's</th>
+    <th class="seg-sticky-right" style="min-width:90px">Participación</th>
+  </tr>`;
+
+  // TBODY — NC y participación calculados sobre TODAS las semanas, no solo las visibles
   document.getElementById('tbody-seguimiento').innerHTML = rows.map(r => {
     const nombre = findKey(r,'Apellido','Nombre');
-    const sems = semCols.map(k => (r[k]||'').trim().toUpperCase());
-    const ncCount = sems.filter(s=>s==='NC').length;
-    const actCount = sems.filter(s=>['C','E','P','V','B'].includes(s)).length;
-    const filled = sems.filter(s=>s).length || 1;
-    const pct = Math.round(actCount/filled*100);
-    const rowStyle = ncCount>=2 ? 'style="background:rgba(248,81,73,0.04)"' : '';
+
+    // Calcular sobre todas las semanas para que el % sea global
+    const allSems = allSemCols.map(k => (r[k]||'').trim().toUpperCase());
+    const ncCount  = allSems.filter(s => s==='NC').length;
+    const actCount = allSems.filter(s => ['C','E','P','V','B'].includes(s)).length;
+    const filled   = allSems.filter(s => s).length || 1;
+    const pct      = Math.round(actCount / filled * 100);
+
+    // Solo renderizar las semanas del rango seleccionado
+    const visibleSems = semCols.map(k => (r[k]||'').trim().toUpperCase());
+
+    const rowStyle = ncCount >= 2 ? 'style="background:rgba(248,81,73,0.04)"' : '';
     return `<tr ${rowStyle}>
-      <td style="font-weight:600;white-space:nowrap">${nombre}</td>
-      ${sems.map(s => {
+      <td class="seg-sticky-left" style="font-weight:600;white-space:nowrap;padding:8px 12px">${nombre}</td>
+      ${visibleSems.map(s => {
         const cls = s ? `wc-${s}` : 'wc-empty';
-        const tip = s ? (wTips[s]||s) : 'Cursando (Sin PCP)';
+        const tip = s ? (wTips[s]||s) : 'Sin dato';
         return `<td style="padding:5px 3px"><span class="wc ${cls}" data-tip="${tip}" style="width:26px;height:26px">${s||'·'}</span></td>`;
       }).join('')}
-      <td style="text-align:center;font-family:var(--font-mono);font-size:0.75rem;color:${ncCount>0?'var(--red)':'var(--muted)'}">${ncCount>0?'⚠️ '+ncCount:'0'}</td>
-      <td style="min-width:90px">
+      <td class="seg-sticky-right2" style="text-align:center;font-family:var(--font-mono);font-size:0.75rem;color:${ncCount>0?'var(--red)':'var(--muted)'};padding:8px 6px">${ncCount>0?'⚠️ '+ncCount:'0'}</td>
+      <td class="seg-sticky-right" style="min-width:90px;padding:8px 12px">
         <div style="display:flex;align-items:center;gap:6px">
           <div style="flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden">
             <div style="height:100%;width:${pct}%;background:${pct>=70?'var(--green)':pct>=40?'var(--orange)':'var(--red)'};border-radius:3px"></div>
@@ -1118,7 +1188,7 @@ function renderSeguimiento(rows) {
         </div>
       </td>
     </tr>`;
-  }).join('') || `<tr><td colspan="40" style="text-align:center;color:var(--muted);padding:32px">Cursando (Sin PCP) de seguimiento</td></tr>`;
+  }).join('');
 }
 
 // ─── ENTREGAS ───
