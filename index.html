@@ -437,7 +437,7 @@
       <!-- Selector de rango de semanas -->
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button id="btn-sem-primera" class="filter-btn active" onclick="setSemRange('primera')" style="font-size:0.7rem;padding:5px 12px">Sem 1–20</button>
-        <button id="btn-sem-ultima" class="filter-btn" onclick="setSemRange('ultima')" style="font-size:0.7rem;padding:5px 12px">Sem 21–36</button>
+        <button id="btn-sem-ultima" class="filter-btn" onclick="setSemRange('ultima')" style="font-size:0.7rem;padding:5px 12px">Sem 23–41</button>
       </div>
     </div>
     <div class="card" style="padding:0;overflow:hidden">
@@ -1155,9 +1155,9 @@ function buildSeguimientoTable() {
   // Todas las columnas de semana disponibles
   const allSemCols = Object.keys(rows[0]).filter(k => /^sem\s*\d+/i.test(k.trim()));
 
-  // Separar en primera mitad (1-20) y segunda (21-36)
+  // Separar en primera mitad (1-20) y segunda (23-41)
   const primeraMitad = allSemCols.slice(0, 20);
-  const ultimaMitad  = allSemCols.slice(20);
+  const ultimaMitad  = allSemCols.slice(23);
   const semCols = _semRange === 'primera' ? primeraMitad : ultimaMitad;
 
   const wTips = {C:'Conectado',E:'Entregó práctica',P:'Tutoría sincrónica',NC:'Sin contacto ⚠️',V:'Consultó Chispa',A:'Accedió sin entregar',B:'Revisó bolsa'};
