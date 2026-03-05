@@ -912,7 +912,7 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   }).length;
 
   document.getElementById('kpi-grid').innerHTML = `
-    ${kpiCard('Total Alumnos', total, 'Registrados este ciclo', 'c-green')}
+    ${kpiCard('Total Alumnos', total, 'Registrados este ciclo', 'c-blue')}
     ${kpiCard('PCP Activos', activos, Math.round(activos/total*100)+'% del total', 'c-green', 'var(--green)')}
     ${kpiCard('Reincorporados', reinc, 'Tasa: '+Math.round(reinc/total*100)+'%', 'c-orange', 'var(--orange)')}
     ${kpiCard('Alertas NC', ncAlumnos.length, 'Con sem. sin contacto', 'c-red', 'var(--red)')}
