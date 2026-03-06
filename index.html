@@ -1157,7 +1157,7 @@ function buildSeguimientoTable() {
 
   // Separar en primera mitad (1-20) y segunda (23-41)
   const primeraMitad = allSemCols.slice(0, 20);
-  const ultimaMitad  = allSemCols.slice(23);
+  const ultimaMitad  = allSemCols.slice(22);
   const semCols = _semRange === 'primera' ? primeraMitad : ultimaMitad;
 
   const wTips = {C:'Conectado',E:'Entregó práctica',P:'Tutoría sincrónica',NC:'Sin contacto ⚠️',V:'Consultó Chispa',A:'Accedió sin entregar',B:'Revisó bolsa'};
