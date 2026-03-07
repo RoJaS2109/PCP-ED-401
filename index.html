@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monitor Académico — Electricista en Inmuebles 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1272,12 +1273,14 @@ function renderEntregas(rows) {
     const scoreHtml = isNaN(califN)
       ? `<span style="color:var(--muted);font-family:var(--font-mono)">—</span>`
       : `<span class="score-ring ${califN>=90?'score-hi':califN>=70?'score-mid':'score-lo'}">${califN}</span>`;
+    const entregaTarde = entrega !== '—' && limite !== '—' && new Date(entrega) > new Date(limite);
     return `<tr>
       <td style="font-weight:600;white-space:nowrap">${nombre}</td>
       <td><span class="pill pill-blue">${modulo}</span></td>
       <td style="text-align:center;font-family:var(--font-mono)">${practica}</td>
       <td style="font-family:var(--font-mono);font-size:0.7rem;color:var(--muted)">${limite}</td>
-      <td style="font-family:var(--font-mono);font-size:0.7rem;color:${entrego.toLowerCase()==='no'?'var(--red)':'var(--text)'}">${entrega}</td>
+      <td style="font-family:var(--font-mono);font-size:0.7rem;color:${entregaTarde?'var(--red)':entrego.toLowerCase()==='no'?'var(--muted)':'var(--text)'}${entregaTarde?';font-weight:600':''}">${entrega}${entregaTarde?' ⚠':''}
+      </td>
       <td>${entrego.toLowerCase()==='si'?"<span class='pill pill-green'>✓ Sí</span>":"<span class='pill pill-red'>✗ No</span>"}</td>
       <td style="text-align:center">${scoreHtml}</td>
       <td>${feedback.toLowerCase()==='si'?"<span class='pill pill-teal'>✓</span>":"<span class='pill pill-muted'>—</span>"}</td>
