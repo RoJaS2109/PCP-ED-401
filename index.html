@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monitor Académico — Electricista en Inmuebles 2026</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23f0a500'>⚡</text></svg>">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -817,6 +817,17 @@ function findKey(obj, ...candidates) {
   return '';
 }
 
+// Parsea fechas en formato DD/MM/YYYY o YYYY-MM-DD o cualquier formato JS válido
+function parseDate(str) {
+  if (!str || str === '—') return null;
+  const s = String(str).trim();
+  // DD/MM/YYYY o DD-MM-YYYY
+  const dmY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmY) return new Date(`${dmY[3]}-${dmY[2].padStart(2,'0')}-${dmY[1].padStart(2,'0')}`);
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
 function cleanRows(rows) {
   // Google Sheets evalúa fórmulas → los valores ya son reales, no hay "=IF(B..."
   // Solo filtramos filas completamente vacías
@@ -960,7 +971,7 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   const asTiempo = entregas.filter(e => {
     const lim = findKey(e,'Límite','limite','Limit');
     const ent = findKey(e,'Fecha Entrega','Fecha\nEntrega','FechaEntrega');
-    return lim && ent && ent !== '—' && new Date(ent) <= new Date(lim);
+    return lim && ent && ent !== '—' && parseDate(ent) <= parseDate(lim);
   }).length;
 
   document.getElementById('kpi-grid').innerHTML = `
@@ -1217,7 +1228,7 @@ function renderEntregas(rows) {
   const entregoSi = rows.filter(r => (findKey(r,'Entregó','Entrego')||'').toLowerCase()==='si').length;
   const atTiempo = rows.filter(r => {
     const lim = findKey(r,'Límite','limite'); const ent = findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega');
-    return lim && ent && ent!=='—' && new Date(ent)<=new Date(lim);
+    return lim && ent && ent!=='—' && parseDate(ent)<=parseDate(lim);
   }).length;
   const demora = entregoSi - atTiempo;
   const noEntrego = total - entregoSi;
@@ -1273,7 +1284,7 @@ function renderEntregas(rows) {
     const scoreHtml = isNaN(califN)
       ? `<span style="color:var(--muted);font-family:var(--font-mono)">—</span>`
       : `<span class="score-ring ${califN>=90?'score-hi':califN>=70?'score-mid':'score-lo'}">${califN}</span>`;
-    const entregaTarde = entrega !== '—' && limite !== '—' && new Date(entrega) > new Date(limite);
+    const entregaTarde = entrega !== '—' && limite !== '—' && parseDate(entrega) > parseDate(limite);
     return `<tr>
       <td style="font-weight:600;white-space:nowrap">${nombre}</td>
       <td><span class="pill pill-blue">${modulo}</span></td>
