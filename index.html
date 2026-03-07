@@ -1261,7 +1261,7 @@ function renderEntregas(rows) {
 
   // Tipo evaluación
   const tipos = {};
-  rows.forEach(r => { const t = findKey(r,'Tipo')||'Otro'; tipos[t]=(tipos[t]||0)+1; });
+  rows.forEach(r => { const t = findKey(r,'Tipo Evaluación','Tipo Evaluacion','Evaluación','Evaluacion')||'Sin tipo'; tipos[t]=(tipos[t]||0)+1; });
   const maxT = Math.max(...Object.values(tipos),1);
   const tColors = ['var(--purple)','var(--teal)','var(--orange)','var(--accent2)'];
   document.getElementById('tipo-bars').innerHTML = Object.entries(tipos)
