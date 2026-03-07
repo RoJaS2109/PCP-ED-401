@@ -1259,9 +1259,13 @@ function renderEntregas(rows) {
       return barRow(m, avg, avg+'', color);
     }).join('') || '<div style="color:var(--muted);font-size:0.78rem">Sin calificaciones cargadas</div>';
 
-  // Tipo evaluación
+  // Tipo evaluación (excluye Participación y Prueba presencial)
+  const tiposExcluidos = ['participación', 'participacion', 'prueba presencial'];
   const tipos = {};
-  rows.forEach(r => { const t = findKey(r,'Tipo Evaluación','Tipo Evaluacion','Evaluación','Evaluacion')||'Sin Evaluar'; tipos[t]=(tipos[t]||0)+1; });
+  rows.forEach(r => {
+    const t = findKey(r,'Tipo Evaluación','Tipo Evaluacion','Evaluación','Evaluacion')||'Sin Evaluar';
+    if (!tiposExcluidos.includes(t.toLowerCase())) tipos[t]=(tipos[t]||0)+1;
+  });
   const maxT = Math.max(...Object.values(tipos),1);
   const tColors = ['var(--purple)','var(--teal)','var(--orange)','var(--accent2)'];
   document.getElementById('tipo-bars').innerHTML = Object.entries(tipos)
