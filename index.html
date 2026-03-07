@@ -933,11 +933,12 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   const total = alumnos.length;
   const counts = {};
   alumnos.forEach(a => {
-    const e = (findKey(a,'Estado PCP','Estado') || '').trim() || 'Sin estado';
+    const e = (findKey(a,'Estado Actual','Estado PCP','Estado') || '').trim() || 'Sin estado';
     counts[e] = (counts[e]||0) + 1;
   });
-  const activos = counts['Activo'] || 0;
-  const reinc   = counts['Reincorporado'] || 0;
+  const activos  = counts['Activo'] || 0;
+  const regular  = counts['Regular'] || 0;
+  const reinc    = counts['Reincorporado'] || 0;
   const abandono = counts['Abandonó'] || 0;
 
   // NC alerts
@@ -974,11 +975,11 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
 
   document.getElementById('kpi-grid').innerHTML = `
     ${kpiCard('Total Alumnos', total, 'Registrados este ciclo', 'c-blue')}
+    ${kpiCard('Regular', regular, Math.round(regular/total*100)+'% del total', 'c-blue', 'var(--accent2)')}
     ${kpiCard('PCP Activos', activos, Math.round(activos/total*100)+'% del total', 'c-green', 'var(--green)')}
     ${kpiCard('Reincorporados', reinc, Math.round(reinc/total*100)+'% del total', 'c-orange', 'var(--orange)')}
     ${kpiCard('Abandonó', abandono, Math.round(abandono/total*100)+'% del total', 'c-red', 'var(--red)')}
     ${kpiCard('Alertas NC', ncAlumnos.length, 'Con sem. sin contacto', 'c-red', 'var(--red)')}
-    ${kpiCard('Entregas', entregasCount ? Math.round(asTiempo/entregasCount*100)+'%' : '—', 'A tiempo', 'c-blue', 'var(--accent2)')}
   `;
 
   // Donut
@@ -1076,14 +1077,14 @@ let _alumnosFilter = 'todos';
 
 function renderAlumnos(rows) {
   _alumnos = rows;
-  const estados = [...new Set(rows.map(r => (findKey(r,'Estado PCP','Estado')||'').trim()).filter(Boolean))];
+  const estados = [...new Set(rows.map(r => (findKey(r,'Estado Actual','Estado PCP','Estado')||'').trim()).filter(Boolean))];
 
   // Filter buttons
   document.getElementById('filter-row').innerHTML =
     `<button class="filter-btn active" onclick="setFilter(this,'todos')">Todos (${rows.length})</button>` +
     estados.map(e => {
-      const n = rows.filter(r => (findKey(r,'Estado PCP','Estado')||'').trim()===e).length;
-      const icon = e==='Activo'?'✅':e==='Reincorporado'?'🔄':e==='Abandonó'?'❌':'❓';
+      const n = rows.filter(r => (findKey(r,'Estado Actual','Estado PCP','Estado')||'').trim()===e).length;
+      const icon = e==='Activo'?'✅':e==='Regular'?'🔵':e==='Reincorporado'?'🔄':e==='Abandonó'?'❌':'❓';
       return `<button class="filter-btn" onclick="setFilter(this,'${e.toLowerCase()}')">${icon} ${e} (${n})</button>`;
     }).join('');
 
@@ -1097,7 +1098,7 @@ function renderAlumnos(rows) {
 function buildAlumnosRows() {
   const q = (document.getElementById('search-alumnos')?.value||'').toLowerCase();
   const filtered = _alumnos.filter(r => {
-    const estado = (findKey(r,'Estado PCP','Estado')||'').trim().toLowerCase();
+    const estado = (findKey(r,'Estado Actual','Estado PCP','Estado')||'').trim().toLowerCase();
     const matchFilter = _alumnosFilter === 'todos' || estado === _alumnosFilter;
     const matchSearch = !q || Object.values(r).join(' ').toLowerCase().includes(q);
     return matchFilter && matchSearch;
@@ -1108,14 +1109,14 @@ function buildAlumnosRows() {
     // Headers reales (con \n): 'Estado \nActual', 'Apellido \ny Nombre', 'Motivo de \nactivación',
     // 'Tipo de \nausencia', 'Cronograma \npersonalizado \nentregado', 'Último \nContacto', 'Próxima \ntutoría'
     const nombre  = findKey(r,'Apellido','Nombre');
-    const estado  = (findKey(r,'Estado PCP','Estado')||'—').trim();
+    const estado  = (findKey(r,'Estado Actual','Estado PCP','Estado')||'—').trim();
     const motivo  = findKey(r,'Motivo') || '—';
     const tipo    = findKey(r,'Tipo de','ausencia','Tipo') || '—';
     const crono   = findKey(r,'Cronograma') || '—';
-    const ult     = findKey(r,'Último') || '—';
-    const prox    = findKey(r,'Próxima') || '—';
+    const ult     = fmtDate(findKey(r,'Último'));
+    const prox    = fmtDate(findKey(r,'Próxima'));
     const obs     = findKey(r,'Observaciones') || '';
-        const estadoPill = estado==='Activo'?'pill-green':estado==='Reincorporado'?'pill-orange':estado==='Abandonó'?'pill-red':'pill-muted';
+        const estadoPill = estado==='Activo'?'pill-green':estado==='Regular'?'pill-blue':estado==='Reincorporado'?'pill-orange':estado==='Abandonó'?'pill-red':'pill-muted';
         const cronoPill  = crono.toLowerCase()==='si'?'pill-green':'pill-red';
         return `<tr data-estado="${estado.toLowerCase()}">
           <td style="font-family:var(--font-mono);color:var(--muted)">${i+1}</td>
@@ -1358,7 +1359,7 @@ function renderComunicaciones(rows) {
 
   document.getElementById('tbody-comunicaciones').innerHTML = rows.map(r => {
     const nombre  = findKey(r,'Apellido','Nombre');
-    const fecha   = findKey(r,'Fecha') || '—';
+    const fecha   = fmtDate(findKey(r,'Fecha'));
     const canal   = (findKey(r,'Canal')||'—').trim();
     const tipo    = findKey(r,'Tipo Contacto','Tipo') || '—';
     const resumen = findKey(r,'Resumen') || '—';
@@ -1399,8 +1400,8 @@ function openPdfModal() {
 
   list.innerHTML = alumnos.map((a, i) => {
     const nombre = findKey(a,'Apellido','Nombre') || `Alumno ${i+1}`;
-    const estado = (findKey(a,'Estado PCP','Estado') || '').trim();
-    const pill   = estado==='Activo'?'#3fb950':estado==='Reincorporado'?'#d29922':estado==='Abandonó'?'#f85149':'#7d8590';
+    const estado = (findKey(a,'Estado Actual','Estado PCP','Estado') || '').trim();
+    const pill   = estado==='Activo'?'#3fb950':estado==='Regular'?'#388bfd':estado==='Reincorporado'?'#d29922':estado==='Abandonó'?'#f85149':'#7d8590';
     return `<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;
       background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer">
       <input type="checkbox" class="pdf-chk" data-idx="${i}" checked onchange="updatePdfCount()">
@@ -1453,18 +1454,18 @@ function generarPDF() {
     if (!a) return '';
 
     const nombre  = findKey(a,'Apellido','Nombre') || '—';
-    const estado  = (findKey(a,'Estado PCP','Estado') || '—').trim();
+    const estado  = (findKey(a,'Estado Actual','Estado PCP','Estado') || '—').trim();
     const motivo  = findKey(a,'Motivo') || '—';
     const tipo    = findKey(a,'Tipo de','ausencia','Tipo') || '—';
     const crono   = findKey(a,'Cronograma') || '—';
-    const ult     = findKey(a,'Último') || '—';
-    const prox    = findKey(a,'Próxima') || '—';
+    const ult     = fmtDate(findKey(a,'Último'));
+    const prox    = fmtDate(findKey(a,'Próxima'));
     const obs     = findKey(a,'Observaciones') || '—';
     const dni     = findKey(a,'DNI') || '—';
     const tel     = findKey(a,'Teléfono') || '—';
     const email   = findKey(a,'Email') || '—';
 
-    const estadoColor = estado==='Activo'?'#3fb950':estado==='Reincorporado'?'#d29922':'#f85149';
+    const estadoColor = estado==='Activo'?'#3fb950':estado==='Regular'?'#388bfd':estado==='Reincorporado'?'#d29922':'#f85149';
 
     // Seguimiento semanal
     const semRow = seguimiento.find(r => (findKey(r,'Apellido','Nombre')||'').trim() === nombre.trim());
@@ -1506,7 +1507,7 @@ function generarPDF() {
     // Comunicaciones del alumno
     const comAlumno = comunicaciones.filter(c => (findKey(c,'Apellido','Nombre')||'').trim()===nombre.trim());
     const comHtml = comAlumno.map(c => {
-      const fecha2  = findKey(c,'Fecha') || '—';
+      const fecha2  = fmtDate(findKey(c,'Fecha'));
       const canal   = findKey(c,'Canal') || '—';
       const tipo3   = findKey(c,'Tipo Contacto','Tipo') || '—';
       const resumen = findKey(c,'Resumen') || '—';
