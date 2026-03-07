@@ -720,7 +720,6 @@ async function connectSheets() {
 
   // ── Cargar hojas ────────────────────────────────────────────────
   const debugLines = [];
-  const dbg = (msg) => { debugLines.push(msg); console.log('[PCP]', msg); };
 
   try {
     const sheets = {};
@@ -868,25 +867,6 @@ function renderDashboard(data, sourceName) {
   const entregas       = cleanRows(data.entregas);
   const comunicaciones = cleanRows(data.comunicaciones);
 
-  // ── Logging diagnóstico ──────────────────────────────────────────
-  console.log('[PCP] renderDashboard llamado con:', sourceName);
-  console.log('[PCP] alumnos raw:', data.alumnos?.length, '→ limpios:', alumnos.length);
-  console.log('[PCP] seguimiento raw:', data.seguimiento?.length, '→ limpios:', seguimiento.length);
-  console.log('[PCP] entregas raw:', data.entregas?.length, '→ limpios:', entregas.length);
-  console.log('[PCP] comunicaciones raw:', data.comunicaciones?.length, '→ limpios:', comunicaciones.length);
-  if (alumnos.length > 0) {
-    console.log('[PCP] Headers alumnos:', Object.keys(alumnos[0]));
-    const r0 = alumnos[0];
-    console.log('[PCP] Fila 1 alumnos → nombre:', findKey(r0,'Apellido','Nombre'),
-      '| estado:', findKey(r0,'Estado'),
-      '| motivo:', findKey(r0,'Motivo'),
-      '| crono:', findKey(r0,'Cronograma'),
-      '| último:', findKey(r0,'Último'),
-      '| próxima:', findKey(r0,'Próxima'));
-  }
-  if (seguimiento.length > 0) console.log('[PCP] Headers seguimiento:', Object.keys(seguimiento[0]).slice(0,6));
-  // ────────────────────────────────────────────────────────────────
-
   document.getElementById('upload-screen').style.display = 'none';
   const dash = document.getElementById('dashboard');
   dash.classList.add('visible');
@@ -936,11 +916,6 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   // ── Debug primera fila ───────────────────────────────────────────
   if (alumnos.length > 0) {
     const r = alumnos[0];
-    console.log('[PCP] Fila 1 completa:', JSON.stringify(r));
-    console.log('[PCP] findKey Estado:', JSON.stringify(findKey(r,'Estado')));
-    console.log('[PCP] findKey Apellido:', JSON.stringify(findKey(r,'Apellido','Nombre')));
-    console.log('[PCP] findKey Motivo:', JSON.stringify(findKey(r,'Motivo')));
-    console.log('[PCP] findKey Próxima:', JSON.stringify(findKey(r,'Próxima')));
   }
   // ────────────────────────────────────────────────────────────────
   // Estado counts
@@ -1242,7 +1217,6 @@ function renderEntregas(rows) {
     const lim = findKey(r,'Límite','limite');
     const ent = findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega');
     const dLim = parseDate(lim), dEnt = parseDate(ent);
-    console.log('[FECHA]', {lim, ent, dLim, dEnt, ok: dLim && dEnt && dEnt <= dLim});
     return dLim !== null && dEnt !== null && dEnt <= dLim;
   }).length;
   const demora = entregoSi - atTiempo;
