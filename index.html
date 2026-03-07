@@ -817,20 +817,22 @@ function findKey(obj, ...candidates) {
   return '';
 }
 
-// Parsea fechas en formato DD/MM/YYYY, YYYY-MM-DD, número serial Excel, o cualquier formato JS válido
+// Parsea fechas en formato D/M/YY, DD/MM/YYYY, YYYY-MM-DD, número serial Excel
 function parseDate(str) {
   if (!str || str === '—' || str === '') return null;
   const s = String(str).trim();
   // Número serial de Excel/Sheets (ej: 45678)
   if (/^\d{5}$/.test(s)) {
-    const serial = parseInt(s);
-    // Excel epoch: 1 enero 1900 = 1, con bug del año bisiesto 1900
-    const d = new Date((serial - 25569) * 86400 * 1000);
+    const d = new Date((parseInt(s) - 25569) * 86400 * 1000);
     return isNaN(d) ? null : d;
   }
-  // DD/MM/YYYY o DD-MM-YYYY
-  const dmY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-  if (dmY) return new Date(`${dmY[3]}-${dmY[2].padStart(2,'0')}-${dmY[1].padStart(2,'0')}`);
+  // D/M/YY o DD/MM/YY o D/M/YYYY o DD/MM/YYYY (día primero — formato Google Sheets es-AR)
+  const dmY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (dmY) {
+    let year = parseInt(dmY[3]);
+    if (year < 100) year += 2000; // YY → YYYY
+    return new Date(`${year}-${dmY[2].padStart(2,'0')}-${dmY[1].padStart(2,'0')}`);
+  }
   // YYYY-MM-DD (ISO)
   const isoY = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (isoY) return new Date(`${isoY[1]}-${isoY[2]}-${isoY[3]}`);
