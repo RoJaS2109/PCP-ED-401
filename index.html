@@ -1261,12 +1261,15 @@ function renderEntregas(rows) {
 
   // Tipo evaluación
   const tipos = {};
-  rows.forEach(r => { const t = findKey(r,'Tipo Evaluación','Tipo Evaluacion','Evaluación','Evaluacion')||'Sin tipo'; tipos[t]=(tipos[t]||0)+1; });
+  rows.forEach(r => { const t = findKey(r,'Tipo Evaluación','Tipo Evaluacion','Evaluación','Evaluacion')||'Sin Evaluar'; tipos[t]=(tipos[t]||0)+1; });
   const maxT = Math.max(...Object.values(tipos),1);
   const tColors = ['var(--purple)','var(--teal)','var(--orange)','var(--accent2)'];
   document.getElementById('tipo-bars').innerHTML = Object.entries(tipos)
     .sort((a,b)=>b[1]-a[1])
-    .map(([k,v],i) => barRow(k, Math.round(v/maxT*100), Math.round(v/total*100)+'%', tColors[i]||'var(--muted)'))
+    .map(([k,v],i) => {
+      const color = k==='Sin Evaluar' ? 'var(--red)' : tColors[i]||'var(--muted)';
+      return barRow(k, Math.round(v/maxT*100), Math.round(v/total*100)+'%', color);
+    })
     .join('') || '<div style="color:var(--muted);font-size:0.78rem">Sin tipos cargados</div>';
 
   // Table
