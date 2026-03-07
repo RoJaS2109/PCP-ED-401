@@ -1077,7 +1077,12 @@ let _alumnosFilter = 'todos';
 
 function renderAlumnos(rows) {
   _alumnos = rows;
-  const estados = [...new Set(rows.map(r => (findKey(r,'Estado Actual','Estado PCP','Estado')||'').trim()).filter(Boolean))];
+  const estadoOrder = ['Con PCP', 'Reincorporado', 'Regular', 'Abandonó'];
+  const estados = [...new Set(rows.map(r => (findKey(r,'Estado Actual','Estado PCP','Estado')||'').trim()).filter(Boolean))]
+    .sort((a, b) => {
+      const ai = estadoOrder.indexOf(a), bi = estadoOrder.indexOf(b);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
 
   // Filter buttons
   document.getElementById('filter-row').innerHTML =
@@ -1089,7 +1094,7 @@ function renderAlumnos(rows) {
     }).join('');
 
   document.getElementById('thead-alumnos').innerHTML = `<tr>
-    <th>#</th><th>Apellido y Nombre</th><th>Estado</th><th>Motivo</th>
+    <th>#</th><th>Apellido y Nombre</th><th>Condición</th><th>Estado / Motivo</th>
     <th>Tipo Ausencia</th><th>Cronograma</th><th>Últ. Contacto</th><th>Próx. Tutoría</th><th>Observaciones</th>
   </tr>`;
   buildAlumnosRows();
