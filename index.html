@@ -137,7 +137,7 @@
     margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
   }
   .header-left { display: flex; align-items: center; gap: 16px; }
-  .logo-bolt { width: 44px; height: 44px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 20px rgba(240,165,0,0.35); flex-shrink: 0; }
+  .logo-bolt { display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
   .header-title h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
   .header-title span { font-size: 0.75rem; color: var(--muted); font-family: var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; }
   .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -817,13 +817,23 @@ function findKey(obj, ...candidates) {
   return '';
 }
 
-// Parsea fechas en formato DD/MM/YYYY o YYYY-MM-DD o cualquier formato JS válido
+// Parsea fechas en formato DD/MM/YYYY, YYYY-MM-DD, número serial Excel, o cualquier formato JS válido
 function parseDate(str) {
-  if (!str || str === '—') return null;
+  if (!str || str === '—' || str === '') return null;
   const s = String(str).trim();
+  // Número serial de Excel/Sheets (ej: 45678)
+  if (/^\d{5}$/.test(s)) {
+    const serial = parseInt(s);
+    // Excel epoch: 1 enero 1900 = 1, con bug del año bisiesto 1900
+    const d = new Date((serial - 25569) * 86400 * 1000);
+    return isNaN(d) ? null : d;
+  }
   // DD/MM/YYYY o DD-MM-YYYY
   const dmY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
   if (dmY) return new Date(`${dmY[3]}-${dmY[2].padStart(2,'0')}-${dmY[1].padStart(2,'0')}`);
+  // YYYY-MM-DD (ISO)
+  const isoY = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoY) return new Date(`${isoY[1]}-${isoY[2]}-${isoY[3]}`);
   const d = new Date(s);
   return isNaN(d) ? null : d;
 }
@@ -1227,8 +1237,11 @@ function renderEntregas(rows) {
   const total = rows.length;
   const entregoSi = rows.filter(r => (findKey(r,'Entregó','Entrego')||'').toLowerCase()==='si').length;
   const atTiempo = rows.filter(r => {
-    const lim = findKey(r,'Límite','limite'); const ent = findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega');
-    return lim && ent && ent!=='—' && parseDate(ent)<=parseDate(lim);
+    const lim = findKey(r,'Límite','limite');
+    const ent = findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega');
+    const dLim = parseDate(lim), dEnt = parseDate(ent);
+    console.log('[FECHA]', {lim, ent, dLim, dEnt, ok: dLim && dEnt && dEnt <= dLim});
+    return dLim !== null && dEnt !== null && dEnt <= dLim;
   }).length;
   const demora = entregoSi - atTiempo;
   const noEntrego = total - entregoSi;
