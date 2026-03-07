@@ -1286,7 +1286,6 @@ function renderEntregas(rows) {
     const entrega  = fmtDate(findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega'));
     const entrego  = findKey(r,'Entregó','Entrego') || '—';
     const calif    = findKey(r,'Calificación','calificacion','Calif','Calific') || null;
-    if (!window._califLogged) { window._califLogged=true; console.log('[CALIF keys]', Object.keys(r).filter(k=>k.toLowerCase().includes('calif') || k.toLowerCase().includes('calific'))); console.log('[CALIF val]', calif); }
     const feedback = findKey(r,'Feedback') || '—';
     const tipo     = findKey(r,'Tipo Evaluación','Evaluación','Tipo') || '—';
     const obs      = findKey(r,'Observaciones') || '';
