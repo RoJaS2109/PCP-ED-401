@@ -933,12 +933,12 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   const total = alumnos.length;
   const counts = {};
   alumnos.forEach(a => {
-    const e = (findKey(a,'Estado') || '').trim() || 'Cursando (Sin PCP)';
+    const e = (findKey(a,'Estado PCP','Estado') || '').trim() || 'Sin estado';
     counts[e] = (counts[e]||0) + 1;
   });
   const activos = counts['Activo'] || 0;
   const reinc   = counts['Reincorporado'] || 0;
-  const inact   = (counts['Inactivo']||0) + (counts['Baja']||0);
+  const abandono = counts['Abandonó'] || 0;
 
   // NC alerts
   const ncAlumnos = [];
@@ -975,10 +975,10 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
   document.getElementById('kpi-grid').innerHTML = `
     ${kpiCard('Total Alumnos', total, 'Registrados este ciclo', 'c-blue')}
     ${kpiCard('PCP Activos', activos, Math.round(activos/total*100)+'% del total', 'c-green', 'var(--green)')}
-    ${kpiCard('Reincorporados', reinc, 'Tasa: '+Math.round(reinc/total*100)+'%', 'c-orange', 'var(--orange)')}
+    ${kpiCard('Reincorporados', reinc, Math.round(reinc/total*100)+'% del total', 'c-orange', 'var(--orange)')}
+    ${kpiCard('Abandonó', abandono, Math.round(abandono/total*100)+'% del total', 'c-red', 'var(--red)')}
     ${kpiCard('Alertas NC', ncAlumnos.length, 'Con sem. sin contacto', 'c-red', 'var(--red)')}
     ${kpiCard('Entregas', entregasCount ? Math.round(asTiempo/entregasCount*100)+'%' : '—', 'A tiempo', 'c-blue', 'var(--accent2)')}
-    ${kpiCard('Próx. Tutorías', proxTutorias.length, 'Próximamente', 'c-teal', 'var(--teal)')}
   `;
 
   // Donut
@@ -1076,14 +1076,14 @@ let _alumnosFilter = 'todos';
 
 function renderAlumnos(rows) {
   _alumnos = rows;
-  const estados = [...new Set(rows.map(r => (findKey(r,'Estado')||'').trim()).filter(Boolean))];
+  const estados = [...new Set(rows.map(r => (findKey(r,'Estado PCP','Estado')||'').trim()).filter(Boolean))];
 
   // Filter buttons
   document.getElementById('filter-row').innerHTML =
     `<button class="filter-btn active" onclick="setFilter(this,'todos')">Todos (${rows.length})</button>` +
     estados.map(e => {
-      const n = rows.filter(r => (findKey(r,'Estado')||'').trim()===e).length;
-      const icon = e==='Activo'?'✅':e==='Reincorporado'?'🔄':'❌';
+      const n = rows.filter(r => (findKey(r,'Estado PCP','Estado')||'').trim()===e).length;
+      const icon = e==='Activo'?'✅':e==='Reincorporado'?'🔄':e==='Abandonó'?'❌':'❓';
       return `<button class="filter-btn" onclick="setFilter(this,'${e.toLowerCase()}')">${icon} ${e} (${n})</button>`;
     }).join('');
 
@@ -1097,7 +1097,7 @@ function renderAlumnos(rows) {
 function buildAlumnosRows() {
   const q = (document.getElementById('search-alumnos')?.value||'').toLowerCase();
   const filtered = _alumnos.filter(r => {
-    const estado = (findKey(r,'Estado')||'').trim().toLowerCase();
+    const estado = (findKey(r,'Estado PCP','Estado')||'').trim().toLowerCase();
     const matchFilter = _alumnosFilter === 'todos' || estado === _alumnosFilter;
     const matchSearch = !q || Object.values(r).join(' ').toLowerCase().includes(q);
     return matchFilter && matchSearch;
@@ -1108,14 +1108,14 @@ function buildAlumnosRows() {
     // Headers reales (con \n): 'Estado \nActual', 'Apellido \ny Nombre', 'Motivo de \nactivación',
     // 'Tipo de \nausencia', 'Cronograma \npersonalizado \nentregado', 'Último \nContacto', 'Próxima \ntutoría'
     const nombre  = findKey(r,'Apellido','Nombre');
-    const estado  = (findKey(r,'Estado')||'—').trim();
+    const estado  = (findKey(r,'Estado PCP','Estado')||'—').trim();
     const motivo  = findKey(r,'Motivo') || '—';
     const tipo    = findKey(r,'Tipo de','ausencia','Tipo') || '—';
     const crono   = findKey(r,'Cronograma') || '—';
     const ult     = findKey(r,'Último') || '—';
     const prox    = findKey(r,'Próxima') || '—';
     const obs     = findKey(r,'Observaciones') || '';
-        const estadoPill = estado==='Activo'?'pill-green':estado==='Reincorporado'?'pill-orange':'pill-red';
+        const estadoPill = estado==='Activo'?'pill-green':estado==='Reincorporado'?'pill-orange':estado==='Abandonó'?'pill-red':'pill-muted';
         const cronoPill  = crono.toLowerCase()==='si'?'pill-green':'pill-red';
         return `<tr data-estado="${estado.toLowerCase()}">
           <td style="font-family:var(--font-mono);color:var(--muted)">${i+1}</td>
@@ -1399,8 +1399,8 @@ function openPdfModal() {
 
   list.innerHTML = alumnos.map((a, i) => {
     const nombre = findKey(a,'Apellido','Nombre') || `Alumno ${i+1}`;
-    const estado = (findKey(a,'Estado') || '').trim();
-    const pill   = estado==='Activo'?'#3fb950':estado==='Reincorporado'?'#d29922':'#f85149';
+    const estado = (findKey(a,'Estado PCP','Estado') || '').trim();
+    const pill   = estado==='Activo'?'#3fb950':estado==='Reincorporado'?'#d29922':estado==='Abandonó'?'#f85149':'#7d8590';
     return `<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;
       background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer">
       <input type="checkbox" class="pdf-chk" data-idx="${i}" checked onchange="updatePdfCount()">
@@ -1453,7 +1453,7 @@ function generarPDF() {
     if (!a) return '';
 
     const nombre  = findKey(a,'Apellido','Nombre') || '—';
-    const estado  = (findKey(a,'Estado') || '—').trim();
+    const estado  = (findKey(a,'Estado PCP','Estado') || '—').trim();
     const motivo  = findKey(a,'Motivo') || '—';
     const tipo    = findKey(a,'Tipo de','ausencia','Tipo') || '—';
     const crono   = findKey(a,'Cronograma') || '—';
