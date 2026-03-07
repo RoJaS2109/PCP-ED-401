@@ -720,6 +720,7 @@ async function connectSheets() {
 
   // ── Cargar hojas ────────────────────────────────────────────────
   const debugLines = [];
+  const dbg = (msg) => { debugLines.push(msg); };
 
   try {
     const sheets = {};
@@ -837,6 +838,16 @@ function parseDate(str) {
   if (isoY) return new Date(`${isoY[1]}-${isoY[2]}-${isoY[3]}`);
   const d = new Date(s);
   return isNaN(d) ? null : d;
+}
+
+// Formatea una fecha como DD/MM/YYYY siempre uniforme
+function fmtDate(str) {
+  const d = parseDate(str);
+  if (!d) return str || '—';
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 function cleanRows(rows) {
@@ -1262,8 +1273,8 @@ function renderEntregas(rows) {
     const nombre   = findKey(r,'Apellido','Nombre');
     const modulo   = findKey(r,'Módulo','modulo') || '—';
     const practica = findKey(r,'Práctica','practica','N°') || '—';
-    const limite   = findKey(r,'Límite','limite','Limit') || '—';
-    const entrega  = findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega') || '—';
+    const limite   = fmtDate(findKey(r,'Límite','limite','Limit'));
+    const entrega  = fmtDate(findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega'));
     const entrego  = findKey(r,'Entregó','Entrego') || '—';
     const calif    = findKey(r,'Calificación','calificacion','Calif') || null;
     const feedback = findKey(r,'Feedback') || '—';
@@ -1476,8 +1487,8 @@ function generarPDF() {
     const entHtml = entAlumno.map(e => {
       const mod  = findKey(e,'Módulo','modulo') || '—';
       const prac = findKey(e,'Práctica','N°') || '—';
-      const lim  = findKey(e,'Límite','limite','Limit') || '—';
-      const ent  = findKey(e,'Fecha Entrega','Fecha\nEntrega','FechaEntrega') || '—';
+      const lim  = fmtDate(findKey(e,'Límite','limite','Limit'));
+      const ent  = fmtDate(findKey(e,'Fecha Entrega','Fecha\nEntrega','FechaEntrega'));
       const entrego = findKey(e,'Entregó','Entrego') || '—';
       const calif = findKey(e,'Calificación','calificacion','Calif') || '—';
       const tipo2 = findKey(e,'Tipo Evaluación','Evaluación','Tipo') || '—';
