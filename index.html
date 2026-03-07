@@ -366,6 +366,7 @@
       <span class="badge badge-green" id="badge-source" title="Conectado a Google Sheets">📊 Google Sheets (en vivo)</span>
       <button class="btn-reload" id="btn-sync" onclick="syncSheets()" style="display:none">🔄 Sincronizar</button>
       <button class="btn-reload" onclick="openPdfModal()" style="border-color:rgba(240,165,0,0.4);color:var(--accent)">📄 Exportar PDF</button>
+      <button class="btn-reload" id="btn-backup" onclick="exportarBackup()" style="border-color:rgba(57,211,195,0.4);color:var(--teal);display:none">💾 Backup JSON</button>
       <!-- CAMBIAR ARCHIVO DESHABILITADO TEMPORALMENTE
       <button class="btn-reload" onclick="reloadDashboard()">↩ Cambiar archivo</button>
       -->
@@ -865,6 +866,9 @@ function renderDashboard(data, sourceName) {
   document.getElementById('upload-screen').style.display = 'none';
   const dash = document.getElementById('dashboard');
   dash.classList.add('visible');
+
+  // Mostrar botón backup (siempre que haya datos, ya sea de Sheets o xlsx)
+  document.getElementById('btn-backup').style.display = 'flex';
 
   // badge
   document.getElementById('badge-source').textContent = '📂 ' + sourceName;
@@ -1667,6 +1671,59 @@ function generarPDF() {
 
   closePdfModal();
   toast('✅ Fichas generadas — usá el botón para imprimir o guardar como PDF', 'success');
+}
+
+// ═══════════════════════════════════════════════
+//  💾 BACKUP JSON
+// ═══════════════════════════════════════════════
+function exportarBackup() {
+  if (!_currentData) { toast('No hay datos cargados para respaldar.', 'warning'); return; }
+
+  const ahora = new Date();
+  const ts = ahora.toISOString().slice(0,19).replace('T','_').replace(/:/g,'-');
+  const semana = getSemana();
+
+  const backup = {
+    _meta: {
+      generado:     ahora.toLocaleString('es-AR', {dateStyle:'full', timeStyle:'short'}),
+      timestamp:    ahora.toISOString(),
+      semana_ciclo: semana,
+      ciclo:        'Electricista en Inmuebles 2026',
+      fuente:       _currentSource || 'desconocida',
+      version:      'PCP-v4',
+    },
+    alumnos:         cleanRows(_currentData.alumnos        || []),
+    seguimiento:     cleanRows(_currentData.seguimiento    || []),
+    entregas:        cleanRows(_currentData.entregas       || []),
+    comunicaciones:  cleanRows(_currentData.comunicaciones || []),
+  };
+
+  // Estadísticas rápidas en el meta
+  backup._meta.totales = {
+    alumnos:        backup.alumnos.length,
+    seguimiento:    backup.seguimiento.length,
+    entregas:       backup.entregas.length,
+    comunicaciones: backup.comunicaciones.length,
+  };
+
+  const json     = JSON.stringify(backup, null, 2);
+  const blob     = new Blob([json], { type: 'application/json' });
+  const url      = URL.createObjectURL(blob);
+  const filename = `backup_PCP_sem${semana}_${ts}.json`;
+
+  // Descarga compatible con todos los navegadores incluyendo Chrome Android
+  const a = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 500);
+
+  toast(`✅ Backup generado: ${filename}`, 'success');
 }
 
 function getSemana() {
