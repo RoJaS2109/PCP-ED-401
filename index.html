@@ -1718,7 +1718,24 @@ function generarPDF() {
     el.addEventListener('touchend', e => { e.preventDefault(); fn(); });
   }
 
-  addTap('btn-overlay-print', () => window.print());
+  addTap('btn-overlay-print', () => {
+    const win = window.open('', '_blank', 'width=1200,height=850');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Fichas PCP — Electricista en Inmuebles 2026</title>
+      ${style}
+      <style>
+        * { box-sizing:border-box; margin:0; padding:0; }
+        body { background:#ffffff; color:#1a1a2e; font-family:'Segoe UI',sans-serif; }
+        @media print {
+          @page { size: A4 landscape; margin: 0; }
+          html, body { background:#ffffff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+      </style>
+    </head><body>${fichas}</body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 600);
+  });
   addTap('btn-overlay-close', () => {
     overlay.style.display = 'none';
     document.body.style.overflow = '';
