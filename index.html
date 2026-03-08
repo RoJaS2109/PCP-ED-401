@@ -1507,7 +1507,7 @@ function generarPDF() {
       const v = (semRow[k]||'').trim().toUpperCase();
       const col = wcColors[v] || '#30363d';
       const lbl = wcLabels[v] || v || '·';
-      return `<div title="${lbl}" style="width:23px;height:23px;border-radius:4px;display:inline-flex;\
+      return `<div title="${lbl}" style="width:24px;height:24px;border-radius:4px;display:inline-flex;\
         align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:monospace;\
         background:${col}22;color:${col};border:1px solid ${col}55;margin:1px">${v||'·'}</div>`;
     }).join('');
