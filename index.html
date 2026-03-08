@@ -263,10 +263,19 @@
   /* Print: mostrar solo el overlay PDF */
   @media print {
     @page { size: A4 landscape; margin: 0; }
+    html, body {
+      background: #ffffff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
     body > *:not(#pdf-overlay) { display:none !important; }
-    #pdf-overlay { position:static !important; overflow:visible !important; }
+    #pdf-overlay {
+      position: static !important;
+      overflow: visible !important;
+      background: #ffffff !important;
+      display: block !important;
+    }
     .no-print { display:none !important; }
-    html, body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 
   /* UPCOMING */
