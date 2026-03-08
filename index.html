@@ -1295,14 +1295,13 @@ function renderEntregas(rows) {
 
   // Table
   document.getElementById('thead-entregas').innerHTML = `<tr>
-    <th>Alumno</th><th>Módulo</th><th>Práctica</th><th>F.Límite</th>
+    <th>Alumno</th><th>Módulo</th><th>F.Límite</th>
     <th>F.Entrega</th><th>Entregó</th><th>Calif.</th><th>Feedback</th><th>Tipo</th><th>Observaciones</th>
   </tr>`;
 
   document.getElementById('tbody-entregas').innerHTML = rows.map(r => {
     const nombre   = findKey(r,'Apellido','Nombre');
     const modulo   = findKey(r,'Módulo','modulo') || '—';
-    const practica = findKey(r,'Práctica','practica','N°') || '—';
     const limite   = fmtDate(findKey(r,'Límite','limite','Limit'));
     const entrega  = fmtDate(findKey(r,'Fecha Entrega','Fecha\nEntrega','FechaEntrega'));
     const entrego  = findKey(r,'Entregó','Entrego') || '—';
@@ -1318,7 +1317,6 @@ function renderEntregas(rows) {
     return `<tr>
       <td style="font-weight:600;white-space:nowrap">${nombre}</td>
       <td><span class="pill pill-blue">${modulo}</span></td>
-      <td style="text-align:center;font-family:var(--font-mono)">${practica}</td>
       <td style="font-family:var(--font-mono);font-size:0.7rem;color:var(--muted)">${limite}</td>
       <td style="font-family:var(--font-mono);font-size:0.7rem;color:${entregaTarde?'var(--red)':entrego.toLowerCase()==='no'?'var(--muted)':'var(--text)'}${entregaTarde?';font-weight:600':''}">${entrega}${entregaTarde?' ⚠':''}
       </td>
