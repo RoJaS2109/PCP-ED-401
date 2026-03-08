@@ -439,13 +439,13 @@
   <div id="tab-seguimiento" class="section">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px">
       <div class="legend-bar" style="margin-bottom:0;flex:1">
-        <div class="leg"><span class="wc wc-C" style="width:23px;height:23px">C</span>Conectado</div>
-        <div class="leg"><span class="wc wc-E" style="width:23px;height:23px">E</span>Entregó práctica</div>
-        <div class="leg"><span class="wc wc-P" style="width:23px;height:23px">P</span>Tutoría sincrónica</div>
-        <div class="leg"><span class="wc wc-NC" style="width:23px;height:23px;animation:none">NC</span>Sin contacto ⚠️</div>
-        <div class="leg"><span class="wc wc-V" style="width:23px;height:23px">V</span>Consultó Chispa</div>
-        <div class="leg"><span class="wc wc-A" style="width:23px;height:23px">A</span>Accedió sin entregar</div>
-        <div class="leg"><span class="wc wc-B" style="width:23px;height:23px">B</span>Revisó bolsa trabajo</div>
+        <div class="leg"><span class="wc wc-C" style="width:22px;height:22px">C</span>Conectado</div>
+        <div class="leg"><span class="wc wc-E" style="width:22px;height:22px">E</span>Entregó práctica</div>
+        <div class="leg"><span class="wc wc-P" style="width:22px;height:22px">P</span>Tutoría sincrónica</div>
+        <div class="leg"><span class="wc wc-NC" style="width:22px;height:22px;animation:none">NC</span>Sin contacto ⚠️</div>
+        <div class="leg"><span class="wc wc-V" style="width:22px;height:22px">V</span>Consultó Chispa</div>
+        <div class="leg"><span class="wc wc-A" style="width:22px;height:22px">A</span>Accedió sin entregar</div>
+        <div class="leg"><span class="wc wc-B" style="width:22px;height:22px">B</span>Revisó bolsa trabajo</div>
       </div>
       <!-- Selector de rango de semanas -->
       <div style="display:flex;gap:6px;flex-shrink:0">
@@ -1507,8 +1507,8 @@ function generarPDF() {
       const v = (semRow[k]||'').trim().toUpperCase();
       const col = wcColors[v] || '#30363d';
       const lbl = wcLabels[v] || v || '·';
-      return `<div title="${lbl}" style="width:20px;height:20px;border-radius:4px;display:inline-flex;\
-        align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:monospace;\
+      return `<div title="${lbl}" style="width:23px;height:23px;border-radius:4px;display:inline-flex;\
+        align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:monospace;\
         background:${col}22;color:${col};border:1px solid ${col}55;margin:1px">${v||'·'}</div>`;
     }).join('');
 
