@@ -262,9 +262,11 @@
 
   /* Print: mostrar solo el overlay PDF */
   @media print {
+    @page { size: A4 landscape; margin: 0; }
     body > *:not(#pdf-overlay) { display:none !important; }
     #pdf-overlay { position:static !important; overflow:visible !important; }
     .no-print { display:none !important; }
+    html, body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
 
   /* UPCOMING */
@@ -1650,8 +1652,19 @@ function generarPDF() {
       }
       .pdf-table tr:nth-child(even) td { background:#fafafa; }
       @media print {
-        @page { margin:0; size:A4; }
-        body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        @page {
+          size: A4 landscape;
+          margin: 0;
+        }
+        html, body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          width: 100%;
+          height: auto;
+        }
+        body {
+          transform-origin: top left;
+        }
         .no-print { display:none !important; }
       }
     </style>`;
