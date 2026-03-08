@@ -1545,12 +1545,12 @@ function generarPDF() {
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
         ${[
           ['Estado',      estado,     estadoColor],
-          ['Participación', partPct+'%', partPct>=70?'#3fb950':partPct>=40?'#d29922':'#f85149'],
-          ['Alertas NC',  ncCount,    ncCount>0?'#f85149':'#3fb950'],
-          ['Entregas',    entAlumno.filter(e=>findKey(e,'Entregó','Entrego').toLowerCase()==='si').length+'/'+entAlumno.length, '#58a6ff'],
+          ['Participación', partPct+'%', partPct>=70?'#2d8a4e':partPct>=40?'#b45309':'#c0392b'],
+          ['Alertas NC',  ncCount,    ncCount>0?'#c0392b':'#2d8a4e'],
+          ['Entregas',    entAlumno.filter(e=>findKey(e,'Entregó','Entrego').toLowerCase()==='si').length+'/'+entAlumno.length, '#1d6fa4'],
         ].map(([l,v,c])=>`
-          <div style="background:#1c2333;border:1px solid #30363d;border-radius:10px;padding:12px;border-top:3px solid ${c}">
-            <div style="font-size:9px;color:#7d8590;text-transform:uppercase;letter-spacing:0.08em;font-family:monospace;margin-bottom:6px">${l}</div>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px;border-top:3px solid ${c}">
+            <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em;font-family:monospace;margin-bottom:6px">${l}</div>
             <div style="font-size:1.4rem;font-weight:700;color:${c}">${v}</div>
           </div>`).join('')}
       </div>` : '';
@@ -1559,7 +1559,7 @@ function generarPDF() {
       <div style="margin-bottom:20px">
         <div class="pdf-section-title">📅 Seguimiento Semanal</div>
         <div style="margin-bottom:8px">${semHtml}</div>
-        <div style="font-size:10px;color:#7d8590;font-family:monospace">
+        <div style="font-size:10px;color:#6b7280;font-family:monospace">
           Participación: ${partPct}% · NC: ${ncCount} semana${ncCount!==1?'s':''} sin contacto
         </div>
       </div>` : '';
@@ -1583,41 +1583,41 @@ function generarPDF() {
       </div>` : '';
 
     return `
-      <div style="page-break-after:always;padding:32px;font-family:'Segoe UI',sans-serif;color:#e6edf3;background:#0d1117;min-height:100vh">
+      <div style="page-break-after:always;padding:32px;font-family:'Segoe UI',sans-serif;color:#1a1a2e;background:#ffffff;min-height:100vh">
 
         <!-- Header ficha -->
         <div style="display:flex;align-items:center;justify-content:space-between;
-          border-bottom:2px solid #f0a500;padding-bottom:16px;margin-bottom:20px">
+          border-bottom:2px solid #e67e00;padding-bottom:16px;margin-bottom:20px">
           <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:42px;height:42px;background:#f0a500;border-radius:10px;
+            <div style="width:42px;height:42px;background:#e67e00;border-radius:10px;
               display:flex;align-items:center;justify-content:center;font-size:22px">⚡</div>
             <div>
-              <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em">${nombre}</div>
-              <div style="font-size:10px;color:#7d8590;font-family:monospace;text-transform:uppercase;letter-spacing:0.05em">
+              <div style="font-size:18px;font-weight:700;letter-spacing:-0.02em;color:#1a1a2e">${nombre}</div>
+              <div style="font-size:10px;color:#6b7280;font-family:monospace;text-transform:uppercase;letter-spacing:0.05em">
                 Electricista en Inmuebles · Ciclo 2026
               </div>
             </div>
           </div>
           <div style="text-align:right">
             <div style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;
-              font-family:monospace;background:${estadoColor}22;color:${estadoColor};border:1px solid ${estadoColor}55">
+              font-family:monospace;background:${estadoColor}22;color:${estadoColor};border:1.5px solid ${estadoColor}">
               ${estado}
             </div>
-            <div style="font-size:9px;color:#7d8590;font-family:monospace;margin-top:4px">Generado: ${fecha}</div>
+            <div style="font-size:9px;color:#6b7280;font-family:monospace;margin-top:4px">Generado: ${fecha}</div>
           </div>
         </div>
 
         <!-- Datos personales -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;
-          background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px">
+          background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:14px">
           ${[
             ['DNI', dni], ['Teléfono', tel], ['Email', email],
             ['Motivo activación', motivo], ['Tipo ausencia', tipo], ['Cronograma entregado', crono],
             ['Último contacto', ult], ['Próxima tutoría', prox], ['Observaciones', obs],
           ].map(([l,v])=>`
             <div>
-              <div style="font-size:8px;color:#7d8590;text-transform:uppercase;letter-spacing:0.07em;font-family:monospace;margin-bottom:2px">${l}</div>
-              <div style="font-size:11px;color:#e6edf3">${v}</div>
+              <div style="font-size:8px;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;font-family:monospace;margin-bottom:2px">${l}</div>
+              <div style="font-size:11px;color:#1a1a2e;font-weight:500">${v}</div>
             </div>`).join('')}
         </div>
 
@@ -1628,27 +1628,28 @@ function generarPDF() {
       </div>`;
   }).join('');
 
-  // Estilos PDF
+  // Estilos PDF — tema claro
   const style = `
     <style>
       * { box-sizing:border-box; margin:0; padding:0; }
-      body { background:#0d1117; color:#e6edf3; }
+      body { background:#ffffff; color:#1a1a2e; }
       .pdf-section-title {
         font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
-        color:#7d8590;font-family:monospace;margin-bottom:10px;
+        color:#6b7280;font-family:monospace;margin-bottom:10px;
         display:flex;align-items:center;gap:6px;
+        border-bottom:1px solid #e5e7eb;padding-bottom:6px;
       }
       .pdf-table { width:100%;border-collapse:collapse;font-size:10px; }
       .pdf-table th {
-        background:#161b22;color:#7d8590;font-family:monospace;font-size:9px;
+        background:#f3f4f6;color:#6b7280;font-family:monospace;font-size:9px;
         text-transform:uppercase;letter-spacing:0.06em;padding:6px 8px;
-        border-bottom:1px solid #30363d;text-align:left;white-space:nowrap;
+        border-bottom:2px solid #e5e7eb;text-align:left;white-space:nowrap;
       }
       .pdf-table td {
-        padding:7px 8px;border-bottom:1px solid #1c2333;
-        font-size:10px;color:#e6edf3;vertical-align:top;
+        padding:7px 8px;border-bottom:1px solid #f0f0f0;
+        font-size:10px;color:#1a1a2e;vertical-align:top;
       }
-      .pdf-table tr:hover td { background:#161b22; }
+      .pdf-table tr:nth-child(even) td { background:#fafafa; }
       @media print {
         @page { margin:0; size:A4; }
         body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -1661,23 +1662,23 @@ function generarPDF() {
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'pdf-overlay';
-    overlay.style.cssText = `position:fixed;inset:0;z-index:9999;background:#0d1117;
-      overflow-y:auto;display:none;font-family:'Segoe UI',sans-serif;color:#e6edf3`;
+    overlay.style.cssText = `position:fixed;inset:0;z-index:9999;background:#f0f2f5;
+      overflow-y:auto;display:none;font-family:'Segoe UI',sans-serif;color:#1a1a2e`;
     document.body.appendChild(overlay);
   }
 
   overlay.innerHTML = `
     <div style="position:sticky;top:0;z-index:10;display:flex;gap:8px;padding:12px 16px;
-      background:rgba(13,17,23,0.95);backdrop-filter:blur(8px);
-      border-bottom:1px solid #30363d;justify-content:flex-end" class="no-print">
+      background:rgba(255,255,255,0.95);backdrop-filter:blur(8px);
+      border-bottom:1px solid #e5e7eb;justify-content:flex-end" class="no-print">
       <button id="btn-overlay-print"
-        style="padding:9px 18px;background:#f0a500;color:#000;border:none;border-radius:8px;
+        style="padding:9px 18px;background:#e67e00;color:#fff;border:none;border-radius:8px;
         font-weight:700;font-size:0.82rem;cursor:pointer;font-family:'Segoe UI',sans-serif;
         -webkit-tap-highlight-color:transparent">
         🖨 Imprimir / Guardar PDF
       </button>
       <button id="btn-overlay-close"
-        style="padding:9px 18px;background:#1c2333;color:#e6edf3;border:1px solid #30363d;
+        style="padding:9px 18px;background:#f3f4f6;color:#1a1a2e;border:1px solid #e5e7eb;
         border-radius:8px;font-weight:600;font-size:0.82rem;cursor:pointer;
         font-family:'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent">
         ✕ Volver
