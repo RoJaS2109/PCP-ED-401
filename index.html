@@ -975,8 +975,8 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
 
   document.getElementById('kpi-grid').innerHTML = `
     ${kpiCard('Total Alumnos', total, 'Registrados este ciclo', 'c-blue')}
-    ${kpiCard('Regular', regular, Math.round(regular/total*100)+'% del total', 'c-blue', 'var(--accent2)')}
-    ${kpiCard('Con PCP', activos, Math.round(activos/total*100)+'% del total', 'c-green', 'var(--green)')}
+    ${kpiCard('Regular', regular, Math.round(regular/total*100)+'% del total', 'c-green', 'var(--green)')}
+    ${kpiCard('Con PCP', activos, Math.round(activos/total*100)+'% del total', 'c-blue', 'var(--accent2)')}
     ${kpiCard('Reincorporados', reinc, Math.round(reinc/total*100)+'% del total', 'c-orange', 'var(--orange)')}
     ${kpiCard('Abandonó', abandono, Math.round(abandono/total*100)+'% del total', 'c-red', 'var(--red)')}
     ${kpiCard('Alertas NC', ncAlumnos.length, 'Con sem. sin contacto', 'c-red', 'var(--red)')}
