@@ -975,7 +975,7 @@ function renderResumen(alumnos, seguimiento, entregas, comunicaciones) {
 
   document.getElementById('kpi-grid').innerHTML = `
     ${kpiCard('Total Alumnos', total, 'Registrados este ciclo', 'c-blue')}
-    ${kpiCard('Regular', regular, Math.round(regular/total*100)+'% del total', 'c-green', 'var(--green)')}
+    ${kpiCard('Alumnos Regulares', regular, Math.round(regular/total*100)+'% del total', 'c-green', 'var(--green)')}
     ${kpiCard('Con PCP', activos, Math.round(activos/total*100)+'% del total', 'c-blue', 'var(--accent2)')}
     ${kpiCard('Reincorporados', reinc, Math.round(reinc/total*100)+'% del total', 'c-orange', 'var(--orange)')}
     ${kpiCard('Abandonó', abandono, Math.round(abandono/total*100)+'% del total', 'c-red', 'var(--red)')}
@@ -1042,22 +1042,28 @@ function barRow(label, pct, valLabel, color) {
 }
 
 function renderDonut(counts) {
+  const estadoColors = {
+    'Regular':        'var(--green)',
+    'Con PCP':        'var(--accent2)',
+    'Reincorporado':  'var(--orange)',
+    'Abandonó':       'var(--red)',
+  };
   const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   const total = entries.reduce((s,[,v])=>s+v,0)||1;
-  const colors = ['var(--green)','var(--orange)','var(--red)','var(--accent2)','var(--purple)','var(--muted)'];
   const r = 40, cx = 55, cy = 55, circ = 2*Math.PI*r;
   let offset = 0;
   let circles = '';
   let legendHtml = '';
-  entries.forEach(([name, val], i) => {
+  entries.forEach(([name, val]) => {
+    const color = estadoColors[name] || 'var(--muted)';
     const pct = val/total;
     const dash = pct * circ;
-    circles += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[i]||'var(--muted)'}" stroke-width="18"
+    circles += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="18"
       stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}"
       stroke-dashoffset="${(-offset).toFixed(1)}"
       transform="rotate(-90 ${cx} ${cy})"/>`;
     legendHtml += `<div class="legend-item">
-      <div class="legend-dot" style="background:${colors[i]||'var(--muted)'}"></div>
+      <div class="legend-dot" style="background:${color}"></div>
       <span>${name}</span>
       <span style="margin-left:auto;font-family:var(--font-mono);font-size:0.75rem">${val}</span>
     </div>`;
