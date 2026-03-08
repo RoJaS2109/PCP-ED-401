@@ -1498,9 +1498,9 @@ function generarPDF() {
       const v = (semRow[k]||'').trim().toUpperCase();
       const col = wcColors[v] || '#30363d';
       const lbl = wcLabels[v] || v || '·';
-      return `<div title="${lbl}" style="width:26px;height:26px;border-radius:5px;display:inline-flex;
-        align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:monospace;
-        background:${col}22;color:${col};border:1px solid ${col}55;margin:2px">${v||'·'}</div>`;
+      return `<div title="${lbl}" style="width:20px;height:20px;border-radius:4px;display:inline-flex;\
+        align-items:center;justify-content:center;font-size:8px;font-weight:700;font-family:monospace;\
+        background:${col}22;color:${col};border:1px solid ${col}55;margin:1px">${v||'·'}</div>`;
     }).join('');
 
     // Entregas del alumno
@@ -1560,7 +1560,7 @@ function generarPDF() {
     const segHtml = inclSeg && semCols.length ? `
       <div style="margin-bottom:20px">
         <div class="pdf-section-title">📅 Seguimiento Semanal</div>
-        <div style="margin-bottom:8px">${semHtml}</div>
+        <div style="margin-bottom:8px;white-space:nowrap;overflow-x:auto">${semHtml}</div>
         <div style="font-size:10px;color:#6b7280;font-family:monospace">
           Participación: ${partPct}% · NC: ${ncCount} semana${ncCount!==1?'s':''} sin contacto
         </div>
@@ -1585,7 +1585,7 @@ function generarPDF() {
       </div>` : '';
 
     return `
-      <div style="page-break-after:always;padding:32px;font-family:'Segoe UI',sans-serif;color:#1a1a2e;background:#ffffff;min-height:100vh">
+      <div style="page-break-after:always;padding:24px 32px;font-family:'Segoe UI',sans-serif;color:#1a1a2e;background:#ffffff">
 
         <!-- Header ficha -->
         <div style="display:flex;align-items:center;justify-content:space-between;
