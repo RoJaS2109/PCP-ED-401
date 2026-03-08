@@ -1734,7 +1734,7 @@ function generarPDF() {
     </head><body>${fichas}</body></html>`);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); }, 600);
+    setTimeout(() => { win.print(); win.close(); }, 600);
   });
   addTap('btn-overlay-close', () => {
     overlay.style.display = 'none';
